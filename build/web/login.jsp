@@ -31,13 +31,19 @@
             }
 
             body {
-                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                background:
+                    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                    url('https://png.pngtree.com/thumb_back/fh260/background/20210902/pngtree-movie-festival-cinema-blockbuster-watching-background-image-image_785372.jpg');
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
                 min-height: 100vh;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 padding: 20px;
             }
+
 
             .login-container {
                 background-color: white;
@@ -178,6 +184,29 @@
                 display: none;
             }
 
+            .captcha-box {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #f2f2f2;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-family: monospace;
+                letter-spacing: 2px;
+                font-size: 18px;
+                font-weight: bold;
+                user-select: none;
+            }
+
+            .refresh-btn {
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                color: var(--primary-color);
+            }
+
             @keyframes fadeIn {
                 from {
                     opacity: 0;
@@ -247,6 +276,19 @@
 
                 </div>
 
+                <!-- MÃ BẢO VỆ -->
+                <div class="form-group">
+                    <label for="captchaInput">Mã bảo vệ</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="captcha-box" id="captchaCode">AB12X</div>
+                        <button type="button" class="refresh-btn" id="refreshCaptcha">🔄</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="captchaInput" name="captchaInput" placeholder="Nhập mã bảo vệ ở trên" required>
+                </div>          
+
                 <div class="remember-forgot">
                     <div class="remember-me">
                         <input type="checkbox" id="remember">
@@ -279,6 +321,19 @@
                     togglePassword.textContent = '👁'; // đổi lại biểu tượng ban đầu
                 }
             });
+
+            // Tạo mã bảo vệ ngẫu nhiên
+            function generateCaptcha() {
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                let captcha = '';
+                for (let i = 0; i < 5; i++) {
+                    captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                document.getElementById('captchaCode').textContent = captcha;
+            }
+
+            document.getElementById('refreshCaptcha').addEventListener('click', generateCaptcha);
+            window.onload = generateCaptcha;
         </script>
 
     </body>

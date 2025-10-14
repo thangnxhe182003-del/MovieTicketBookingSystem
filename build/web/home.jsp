@@ -141,7 +141,6 @@
 
             .slides {
                 display: flex;
-                transition: transform 0.6s ease;
             }
 
             .slide {
@@ -169,7 +168,6 @@
                 width: 10px;
                 background-color: #ccc;
                 border-radius: 50%;
-                cursor: pointer;
             }
 
             .dot.active {
@@ -332,12 +330,10 @@
             </div>
         </header>
 
-        <!-- ==== SLIDER ==== -->
+        <!-- ==== SLIDER (tĩnh, không chạy tự động) ==== -->
         <div class="slider">
             <div class="slides">
                 <div class="slide"><img src="https://media.lottecinemavn.com/Media/WebAdmin/7ce48d93c8074902b0b5a6ba82e85351.jpg" alt="Banner 1"></div>
-                <div class="slide"><img src="https://media.lottecinemavn.com/Media/WebAdmin/0908df98502240e8991ef02760dea525.jpg" alt="Banner 2"></div>
-                <div class="slide"><img src="https://img.cgv.co.kr/WebApp/contents/banner/2023/1015/CGV_MovieClub_960x448.jpg" alt="Banner 3"></div>
             </div>
             <div class="slider-nav">
                 <span class="dot active"></span>
@@ -404,11 +400,11 @@
             <h2>🎁 Tin tức & Ưu đãi</h2>
             <div class="promo-list">
                 <div class="promo-card">
-                    <img src="https://img.cgv.co.kr/WebApp/contents/banner/2023/1025/Promotion_960x448.jpg" alt="Promo 1">
+                    <img src="https://iguov8nhvyobj.vcdn.cloud/media/wysiwyg/2025/052025/240x201_2_.jpg" alt="Promo 1">
                     <p>Nhận ngay combo bắp nước miễn phí khi đặt vé online 🎉</p>
                 </div>
                 <div class="promo-card">
-                    <img src="https://img.cgv.co.kr/WebApp/contents/banner/2023/1017/Movie_Club_960x448.jpg" alt="Promo 2">
+                    <img src="https://iguov8nhvyobj.vcdn.cloud/media/wysiwyg/2024/122024/240X201_14_.png" alt="Promo 2">
                     <p>Tham gia Movie Club - tích điểm đổi vé miễn phí!</p>
                 </div>
             </div>
@@ -419,45 +415,6 @@
             <p>© 2025 MovieNow - Nền tảng đặt vé phim hàng đầu Việt Nam</p>
             <p>Hotline: 1900 1234 | Email: support@movienow.vn</p>
         </footer>
-
-        <!-- ==== SLIDER SCRIPT ==== -->
-        <script>
-            const slides = document.querySelector('.slides');
-            const dots = document.querySelectorAll('.dot');
-            let index = 0;
-            const totalSlides = dots.length;
-
-            // 👉 Hàm hiển thị slide hiện tại
-            function showSlide(i) {
-                index = i;
-                slides.style.transform = `translateX(${-i * 100}%)`;
-                dots.forEach(dot => dot.classList.remove('active'));
-                dots[i].classList.add('active');
-            }
-
-            // 👉 Gắn sự kiện click vào các chấm tròn
-            dots.forEach((dot, i) => {
-                dot.addEventListener('click', () => {
-                    clearInterval(autoSlide); // dừng tự động khi người dùng chọn
-                    showSlide(i);
-                    autoSlide = startAutoSlide(); // chạy lại tự động
-                });
-            });
-
-            // 👉 Tự động chạy slide sau mỗi 4 giây
-            function startAutoSlide() {
-                return setInterval(() => {
-                    index = (index + 1) % totalSlides;
-                    showSlide(index);
-                }, 4000);
-            }
-
-            // 👉 Gọi hiển thị slide đầu tiên khi load
-            showSlide(0);
-
-            // 👉 Bắt đầu tự động chạy
-            let autoSlide = startAutoSlide();
-        </script>
 
     </body>
 </html>
