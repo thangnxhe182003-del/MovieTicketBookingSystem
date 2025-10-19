@@ -4,13 +4,15 @@
  */
 package model;
 
+import java.time.LocalDateTime;
+
 /**
  *
  * @author thang
  */
 public class Customer {
 
-    private String maKH;
+    private Integer maKH;
     private String tenDangNhap;
     private String matKhau;
     private String hoTen;
@@ -18,17 +20,19 @@ public class Customer {
     private String gioiTinh;
     private String soDienThoai;
     private String email;
-    private String diemHienCo;
-    private String chucVu;
-    private boolean isActivated;
-    private String otp;  // Thay activationToken bằng otp
+    private boolean isEmailVerified;
+    private LocalDateTime ngayTao;
+    private LocalDateTime ngayCapNhat;
+    private String trangThai;
 
     public Customer() {
-
     }
 
-    // Constructor đầy đủ (bao gồm OTP)
-    public Customer(String maKH, String tenDangNhap, String matKhau, String hoTen, String ngaySinh, String gioiTinh, String soDienThoai, String email, String diemHienCo, String chucVu, boolean isActivated, String otp) {
+    // Constructor đầy đủ
+    public Customer(Integer maKH, String tenDangNhap, String matKhau, String hoTen, 
+            String ngaySinh, String gioiTinh, String soDienThoai, String email, 
+            boolean isEmailVerified, LocalDateTime ngayTao, LocalDateTime ngayCapNhat, 
+            String trangThai) {
         this.maKH = maKH;
         this.tenDangNhap = tenDangNhap;
         this.matKhau = matKhau;
@@ -37,23 +41,32 @@ public class Customer {
         this.gioiTinh = gioiTinh;
         this.soDienThoai = soDienThoai;
         this.email = email;
-        this.diemHienCo = diemHienCo;
-        this.chucVu = chucVu;
-        this.isActivated = isActivated;
-        this.otp = otp;
+        this.isEmailVerified = isEmailVerified;
+        this.ngayTao = ngayTao;
+        this.ngayCapNhat = ngayCapNhat;
+        this.trangThai = trangThai;
     }
 
-    // Constructor cũ (backward compatibility, không có OTP)
-    public Customer(String maKH, String tenDangNhap, String matKhau, String hoTen, String ngaySinh, String gioiTinh, String soDienThoai, String email, String diemHienCo, String chucVu) {
-        this(maKH, tenDangNhap, matKhau, hoTen, ngaySinh, gioiTinh, soDienThoai, email, diemHienCo, chucVu, false, null);
+    // Constructor cho đăng ký mới (không cần ngayTao, ngayCapNhat vì DB sẽ tự sinh)
+    public Customer(String tenDangNhap, String matKhau, String hoTen, 
+            String ngaySinh, String gioiTinh, String soDienThoai, String email) {
+        this.tenDangNhap = tenDangNhap;
+        this.matKhau = matKhau;
+        this.hoTen = hoTen;
+        this.ngaySinh = ngaySinh;
+        this.gioiTinh = gioiTinh;
+        this.soDienThoai = soDienThoai;
+        this.email = email;
+        this.isEmailVerified = false;
+        this.trangThai = "Pending";
     }
 
-    // Getters/Setters cũ (giữ nguyên)
-    public String getMaKH() {
+    // Getters and Setters
+    public Integer getMaKH() {
         return maKH;
     }
 
-    public void setMaKH(String maKH) {
+    public void setMaKH(Integer maKH) {
         this.maKH = maKH;
     }
 
@@ -113,36 +126,35 @@ public class Customer {
         this.email = email;
     }
 
-    public String getDiemHienCo() {
-        return diemHienCo;
+    public boolean isIsEmailVerified() {
+        return isEmailVerified;
     }
 
-    public void setDiemHienCo(String diemHienCo) {
-        this.diemHienCo = diemHienCo;
+    public void setIsEmailVerified(boolean isEmailVerified) {
+        this.isEmailVerified = isEmailVerified;
     }
 
-    public String getChucVu() {
-        return chucVu;
+    public LocalDateTime getNgayTao() {
+        return ngayTao;
     }
 
-    public void setChucVu(String chucVu) {
-        this.chucVu = chucVu;
+    public void setNgayTao(LocalDateTime ngayTao) {
+        this.ngayTao = ngayTao;
     }
 
-    // Getters/Setters mới cho OTP
-    public boolean getIsActivated() {
-        return isActivated;
+    public LocalDateTime getNgayCapNhat() {
+        return ngayCapNhat;
     }
 
-    public void setIsActivated(boolean isActivated) {
-        this.isActivated = isActivated;
+    public void setNgayCapNhat(LocalDateTime ngayCapNhat) {
+        this.ngayCapNhat = ngayCapNhat;
     }
 
-    public String getOtp() {
-        return otp;
+    public String getTrangThai() {
+        return trangThai;
     }
 
-    public void setOtp(String otp) {
-        this.otp = otp;
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
     }
 }
