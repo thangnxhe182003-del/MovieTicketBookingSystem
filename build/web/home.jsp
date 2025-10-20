@@ -141,6 +141,7 @@
 
             .slides {
                 display: flex;
+                transition: transform 0.5s ease-in-out;
             }
 
             .slide {
@@ -168,6 +169,7 @@
                 width: 10px;
                 background-color: #ccc;
                 border-radius: 50%;
+                cursor: pointer;
             }
 
             .dot.active {
@@ -330,43 +332,91 @@
             </div>
         </header>
 
-        <!-- ==== SLIDER (tĩnh, không chạy tự động) ==== -->
+        <!-- ==== SLIDER (với 3 slide, tự động chuyển sau 5 giây, và có thể click dot để chuyển tay) ==== -->
         <div class="slider">
             <div class="slides">
-                <div class="slide"><img src="https://media.lottecinemavn.com/Media/WebAdmin/7ce48d93c8074902b0b5a6ba82e85351.jpg" alt="Banner 1"></div>
+                <div class="slide"><img src="https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/v/a/vanmay.jpg" alt="Banner 1"></div>
+                <div class="slide"><img src="https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/w/2/w25_logoposter_980x448.jpg" alt="Banner 2"></div>
+                <div class="slide"><img src="https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/g/i/giovanthoi.jpg" alt="Banner 3"></div>
             </div>
             <div class="slider-nav">
-                <span class="dot active"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
+                <span class="dot active" onclick="goToSlide(0)"></span>
+                <span class="dot" onclick="goToSlide(1)"></span>
+                <span class="dot" onclick="goToSlide(2)"></span>
             </div>
         </div>
 
-        <!-- ==== MOVIE SECTIONS ==== -->
+        <!-- JavaScript cho slider -->
+        <script>
+            let currentSlide = 0;
+            const slides = document.querySelector('.slides');
+            const dots = document.querySelectorAll('.dot');
+
+            function goToSlide(n) {
+                currentSlide = n;
+                slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentSlide);
+                });
+            }
+
+            function autoSlide() {
+                currentSlide = (currentSlide + 1) % 3; // 3 là số slide
+                goToSlide(currentSlide);
+            }
+
+            setInterval(autoSlide, 5000); // Tự động chuyển sau 5 giây
+        </script>
+
+        <!-- ==== MOVIE SECTIONS (thêm nhiều phim hơn từ dữ liệu Movie trong DB để lấp đầy) ==== -->
         <div class="movie-section">
             <h2>🎬 Phim đang chiếu</h2>
             <div class="movie-list">
                 <div class="movie-card">
-                    <img src="https://img.cgv.co.kr/Movie/Thumbnail/Poster/000087/87211/87211_320.jpg" alt="Phim 1">
+                    <img src="https://vimages.coccoc.com/vimage?ns=movies&url=https%3A%2F%2Fi0.wp.com%2Fphimmoi12.net%2Fwp-content%2Fuploads%2F2024%2F06%2Favengers-hoi-ket-92601-thumbnail.jpg" alt="Avengers Endgame">
                     <div class="movie-info">
-                        <h3>Venom 3</h3>
-                        <p>Hành động | 128 phút</p>
+                        <h3>Avengers Endgame</h3>
+                        <p>Hành động, Viên tưởng | 181 phút</p>
                         <button>Đặt vé</button>
                     </div>
                 </div>
                 <div class="movie-card">
-                    <img src="https://img.cgv.co.kr/Movie/Thumbnail/Poster/000087/87172/87172_320.jpg" alt="Phim 2">
+                    <img src="https://vimages.coccoc.com/vimage?ns=movies&url=https%3A%2F%2Fi0.wp.com%2Fwww.fimfast.info%2Fwp-content%2Fuploads%2F2023%2F09%2Fthe-matrix-272283-thumbnail-1.jpg" alt="The Matrix">
                     <div class="movie-info">
-                        <h3>Inside Out 2</h3>
-                        <p>Hoạt hình | 105 phút</p>
+                        <h3>The Matrix</h3>
+                        <p>Viến tưởng, Hành động | 136 phút</p>
                         <button>Đặt vé</button>
                     </div>
                 </div>
                 <div class="movie-card">
-                    <img src="https://img.cgv.co.kr/Movie/Thumbnail/Poster/000087/87237/87237_320.jpg" alt="Phim 3">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/a/ab/Titanic_3D_poster_Vietnam.jpg" alt="Titanic">
                     <div class="movie-info">
-                        <h3>Deadpool & Wolverine</h3>
-                        <p>Siêu anh hùng | 132 phút</p>
+                        <h3>Titanic</h3>
+                        <p>Tình cảm, Lịch sử | 195 phút</p>
+                        <button>Đặt vé</button>
+                    </div>
+                </div>
+                <div class="movie-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/1/11/Inception_poster_1.jpg" alt="Inception">
+                    <div class="movie-info">
+                        <h3>Inception</h3>
+                        <p>Viến tưởng, Tâm lý | 148 phút</p>
+                        <button>Đặt vé</button>
+                    </div>
+                </div>
+                <div class="movie-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/c/cc/Poster_phim_Parasite_2019.jpg" alt="Parasite">
+                    <div class="movie-info">
+                        <h3>Parasite</h3>
+                        <p>Tâm lý, Hài | 132 phút</p>
+                        <button>Đặt vé</button>
+                    </div>
+                </div>
+                <div class="movie-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/0/05/Frozen_%282013_film%29_poster.jpg" alt="Frozen">
+                    <div class="movie-info">
+                        <h3>Frozen</h3>
+                        <p>Hoạt hình, Gia đình | 102 phút</p>
                         <button>Đặt vé</button>
                     </div>
                 </div>
@@ -377,18 +427,34 @@
             <h2>🍿 Phim sắp chiếu</h2>
             <div class="movie-list">
                 <div class="movie-card">
-                    <img src="https://img.cgv.co.kr/Movie/Thumbnail/Poster/000087/87239/87239_320.jpg" alt="Phim 4">
+                    <img src="https://vimages.coccoc.com/vimage?ns=movies&url=https%3A%2F%2Fi.mpcdn.top%2Fposter%2Fnguoi-nhen-khong-con-nha-9963.jpg%3F1647020850" alt="Spider-Man No Way Home">
                     <div class="movie-info">
-                        <h3>Gladiator II</h3>
-                        <p>Lịch sử | 155 phút</p>
+                        <h3>Spider-Man No Way Home</h3>
+                        <p>Hành động, Siêu anh hùng | 148 phút</p>
                         <button>Xem chi tiết</button>
                     </div>
                 </div>
                 <div class="movie-card">
-                    <img src="https://img.cgv.co.kr/Movie/Thumbnail/Poster/000087/87230/87230_320.jpg" alt="Phim 5">
+                    <img src="https://vimages.coccoc.com/vimage?ns=movies&url=https%3A%2F%2Fi0.wp.com%2Fphimmoi12.net%2Fwp-content%2Fuploads%2F2023%2F02%2Fthe-godfather-1972-114857-thumbnail.jpg" alt="The Godfather">
                     <div class="movie-info">
-                        <h3>Wicked</h3>
-                        <p>Âm nhạc | 130 phút</p>
+                        <h3>The Godfather</h3>
+                        <p>Tội phạm, Tâm lý | 175 phút</p>
+                        <button>Xem chi tiết</button>
+                    </div>
+                </div>
+                <div class="movie-card">
+                    <img src="https://vimages.coccoc.com/vimage?ns=movies&url=https%3A%2F%2Fi.mpcdn.top%2Fposter%2Fcong-vien-ky-jura-1-4874.jpg%3F1720463906" alt="Jurassic Park">
+                    <div class="movie-info">
+                        <h3>Jurassic Park</h3>
+                        <p>Khoa học viễn tưởng | 127 phút</p>
+                        <button>Xem chi tiết</button>
+                    </div>
+                </div>
+                <div class="movie-card">
+                    <img src="https://vimages.coccoc.com/vimage?ns=movies&url=https%3A%2F%2Fstatic.nutscdn.com%2Fvimg%2F300-0%2F61e70aae6a839b0df65093ea9a814fcf.jpg" alt="La La Land">
+                    <div class="movie-info">
+                        <h3>La La Land</h3>
+                        <p>Tình cảm, Nhạc kịch | 128 phút</p>
                         <button>Xem chi tiết</button>
                     </div>
                 </div>
