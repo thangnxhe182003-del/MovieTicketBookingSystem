@@ -300,7 +300,7 @@
                     <i class="fas fa-clock"></i>
                     Suất chiếu
                 </a>
-                <a href="admin-bookings" class="menu-item ${param.currentPage == 'bookings' ? 'active' : ''}">
+                <a href="admin-tickets" class="menu-item ${param.currentPage == 'bookings' ? 'active' : ''}">
                     <i class="fas fa-ticket-alt"></i>
                     Đặt vé
                 </a>

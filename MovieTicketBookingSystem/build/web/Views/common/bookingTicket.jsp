@@ -214,7 +214,7 @@
                     <c:forEach var="dateEntry" items="${showtimesByDate}">
                         <div class="showtime-group">
                             <div class="date-header">
-                                📅 <fmt:formatDate value="${dateEntry.key}" pattern="EEEE, dd/MM/yyyy" locale="vi_VN"/>
+                                📅 <fmt:formatDate value="${dateEntry.key}" pattern="EEEE, dd/MM/yyyy"/>
                             </div>
                             <div class="showtime-buttons">
                                 <c:forEach var="showtime" items="${dateEntry.value}">

@@ -9,6 +9,7 @@ import dal.MovieDAO;
 import dal.RatingDAO;
 import model.Movie;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,37 @@ public class HomePageController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         try {
+            String q = request.getParameter("q");
+
+            if (q != null && !q.trim().isEmpty()) {
+                // SEARCH MODE
+                List<Movie> movies = movieDAO.searchMovies(q.trim());
+
+                Map<Integer, Double> avgRatingsMap = new HashMap<>();
+                Map<Integer, String> dateLabelMap = new HashMap<>();
+                for (Movie m : movies) {
+                    Double avg = ratingDAO.getAverageRatingByMovie(m.getMaPhim());
+                    if (avg != null) avgRatingsMap.put(m.getMaPhim(), avg);
+                    if (m.getNgayKhoiChieu() != null) {
+                        String formatted = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                                .format(m.getNgayKhoiChieu());
+                        dateLabelMap.put(m.getMaPhim(), formatted);
+                    }
+                }
+
+                request.setAttribute("searchQuery", q.trim());
+                request.setAttribute("movies", movies);
+                request.setAttribute("nowShowingMovies", movies); // dùng tab hiện tại hiển thị kết quả
+                request.setAttribute("upcomingMovies", new ArrayList<Movie>()); // rỗng khi search
+                request.setAttribute("allMovies", movies);
+                request.setAttribute("avgRatingsMap", avgRatingsMap);
+                request.setAttribute("dateLabelMap", dateLabelMap);
+
+                request.getRequestDispatcher("Views/common/home.jsp").forward(request, response);
+                return;
+            }
+
+            // DEFAULT HOME
             List<Movie> allMovies = movieDAO.getAllMovies();
             List<Movie> upcomingMovies = movieDAO.getUpcomingMovies();
 

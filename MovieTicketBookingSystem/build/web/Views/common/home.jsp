@@ -33,7 +33,30 @@
             .movie-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.08); transition: transform .2s ease, box-shadow .2s ease; display: flex; flex-direction: column; height: 100%; }
             .movie-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
             .movie-thumb { width: 100%; aspect-ratio: 2 / 3; background: #f1f1f1; }
-            .movie-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+            .movie-thumb img { 
+                width: 100%; 
+                height: 100%; 
+                object-fit: cover; 
+                display: block; 
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+            
+            .movie-thumb img.loaded {
+                opacity: 1;
+            }
+            
+            .movie-thumb img.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 12px;
+                text-align: center;
+            }
             .movie-meta { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
             .movie-title { font-size: 15px; font-weight: 700; color: #222; line-height: 1.3; min-height: 40px; }
             .movie-subinfo { 
@@ -98,7 +121,13 @@
             </div>
         </div>
 
-        <div class="home-body">
+            <div class="home-body">
+                <c:if test="${not empty searchQuery}">
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #e50914;">
+                        <h2 style="margin: 0 0 8px 0; color: #333;">Kết quả tìm kiếm cho: "${searchQuery}"</h2>
+                        <p style="margin: 0; color: #666;">Tìm thấy ${movies.size()} phim</p>
+                    </div>
+                </c:if>
             <div class="tabs">
                 <button class="tab-btn active" data-tab="now">Đang chiếu</button>
                 <button class="tab-btn" data-tab="upcoming">Sắp chiếu</button>
@@ -116,7 +145,9 @@
                                     <c:url var="movieDetailUrl" value="movie?action=detail&maPhim=${movie.maPhim}"/>
                                     <c:url var="moviePosterUrl" value="/assets/image/${movie.poster}"/>
                                     <a class="movie-thumb" href="${movieDetailUrl}">
-                                        <img src="${moviePosterUrl}" alt="<c:out value="${movie.tenPhim}"/>" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                                        <img src="${moviePosterUrl}" 
+                                             alt="<c:out value="${movie.tenPhim}"/>" 
+                                             data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDMwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xNTAgODBDMTUwIDY1LjM2MTcgMTYzLjM2MiA1MiAxNzggNTJIMTIyQzEzNi42MzggNTIgMTUwIDY1LjM2MTcgMTUwIDgwVjM3MEMxNTAgMzg0LjYzOCAxMzYuNjM4IDM5OCAxMjIgMzk4SDE3OEMxNjMuMzYyIDM5OCAxNTAgMzg0LjYzOCAxNTAgMzcwVjgwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjEzNSIgeT0iMjAwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                                     </a>
                                     <div class="movie-meta">
                                         <div class="movie-title"><c:out value="${movie.tenPhim}"/></div>
@@ -151,7 +182,9 @@
                                     <c:url var="movieDetailUrl" value="movie?action=detail&maPhim=${movie.maPhim}"/>
                                     <c:url var="moviePosterUrl" value="/assets/image/${movie.poster}"/>
                                     <a class="movie-thumb" href="${movieDetailUrl}">
-                                        <img src="${moviePosterUrl}" alt="<c:out value="${movie.tenPhim}"/>" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                                        <img src="${moviePosterUrl}" 
+                                             alt="<c:out value="${movie.tenPhim}"/>" 
+                                             data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDMwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xNTAgODBDMTUwIDY1LjM2MTcgMTYzLjM2MiA1MiAxNzggNTJIMTIyQzEzNi42MzggNTIgMTUwIDY1LjM2MTcgMTUwIDgwVjM3MEMxNTAgMzg0LjYzOCAxMzYuNjM4IDM5OCAxMjIgMzk4SDE3OEMxNjMuMzYyIDM5OCAxNTAgMzg0LjYzOCAxNTAgMzcwVjgwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjEzNSIgeT0iMjAwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                                     </a>
                                     <div class="movie-meta">
                                         <div class="movie-title"><c:out value="${movie.tenPhim}"/></div>
@@ -196,8 +229,34 @@
         <jsp:include page="../layout/footer.jsp" />
 
         <script>
+            // Image loading handler
+            function handleImageLoad(img) {
+                img.classList.add('loaded');
+            }
+            
+            function handleImageError(img) {
+                img.classList.add('error');
+                if (img.dataset.fallback) {
+                    img.src = img.dataset.fallback;
+                }
+            }
+            
             // Tabs switching
             document.addEventListener('DOMContentLoaded', function() {
+                // Handle image loading
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.complete) {
+                        if (img.naturalHeight !== 0) {
+                            handleImageLoad(img);
+                        } else {
+                            handleImageError(img);
+                        }
+                    } else {
+                        img.addEventListener('load', () => handleImageLoad(img));
+                        img.addEventListener('error', () => handleImageError(img));
+                    }
+                });
+                
                 const tabs = document.querySelectorAll('.tab-btn');
                 const nowTab = document.getElementById('tab-now');
                 const upTab = document.getElementById('tab-upcoming');
