@@ -33,6 +33,26 @@
                 width: 100%;
                 border-radius: 6px;
                 height: auto;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+                min-height: 160px;
+                object-fit: cover;
+            }
+            
+            .seat-poster img.loaded {
+                opacity: 1;
+            }
+            
+            .seat-poster img.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 12px;
+                text-align: center;
             }
 
             .seat-info h1 {
@@ -407,6 +427,24 @@
                 object-fit: cover;
                 border-radius: 6px;
                 margin-bottom: 8px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+            
+            .combo-image.loaded {
+                opacity: 1;
+            }
+            
+            .combo-image.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 10px;
+                text-align: center;
             }
 
             .combo-name {
@@ -550,7 +588,9 @@
         <!-- HEADER -->
         <div class="seat-header">
             <div class="seat-poster">
-                <img src="${pageContext.request.contextPath}/assets/image/${movie.poster}" alt="${movie.tenPhim}" onerror="this.src='https://via.placeholder.com/120x160?text=No+Image'">
+                <img src="${pageContext.request.contextPath}/assets/image/${movie.poster}" 
+                     alt="${movie.tenPhim}" 
+                     data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjE2MCIgdmlld0JveD0iMCAwIDEyMCAxNjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTYwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik02MCA0MEM2MCAzNS41ODE3IDYzLjU4MTcgMzIgNjggMzJINzJDNzYuNDE4MyAzMiA4MCAzNS41ODE3IDgwIDQwVjEyMEM4MCAxMjQuNDE4IDc2LjQxODMgMTI4IDcyIDEyOEg2OEM2My41ODE3IDEyOCA2MCAxMjQuNDE4IDYwIDEyMFY0MFoiIGZpbGw9IiNEOUQ5RDkiLz4KPHN2ZyB4PSI0NSIgeT0iNjAiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPgo8L3N2Zz4K">
             </div>
             <div class="seat-info">
                 <h1>${movie.tenPhim}</h1>
@@ -635,7 +675,8 @@
 
             <!-- CHECKOUT SECTION -->
             <div class="checkout-section">
-                <div class="selected-seats-info">
+                <!-- Ẩn tóm tắt ghế riêng lẻ -->
+                <div class="selected-seats-info" style="display: none;">
                     <div class="info-box">
                         <div class="info-label">Ghế được chọn</div>
                         <div class="info-value" id="selectedSeatsDisplay">
@@ -650,6 +691,7 @@
                     </div>
                 </div>
 
+                <!-- Ẩn chi tiết giá ghế riêng lẻ -->
                 <div class="price-breakdown" id="priceBreakdown" style="display: none;">
                     <div id="priceDetails"></div>
                     <div class="price-row total">
@@ -670,8 +712,10 @@
                     <c:forEach var="product" items="${products}">
                         <c:if test="${'Active'.equals(product.trangThai)}">
                             <div class="combo-item" data-product-id="${product.maSP}" data-product-price="${product.donGia}">
-                                <img src="${pageContext.request.contextPath}/assets/image/${product.thumbnailUrl}" alt="${product.tenSP}" class="combo-image" 
-                                     onerror="this.src='https://via.placeholder.com/200x120?text=Combo'">
+                                <img src="${pageContext.request.contextPath}/assets/image/${product.thumbnailUrl}" 
+                                     alt="${product.tenSP}" 
+                                     class="combo-image"
+                                     data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xMDAgNDBDMTAwIDM1LjU4MTcgMTAzLjU4MiAzMiAxMDggMzJIMTEyQzExNi40MTggMzIgMTIwIDM1LjU4MTcgMTIwIDQwVjgwQzEyMCA4NC40MTgzIDExNi40MTggODggMTEyIDg4SDEwOEMxMDMuNTgyIDg4IDEwMCA4NC40MTgzIDEwMCA4MFY0MFoiIGZpbGw9IiNEOUQ5RDkiLz4KPHN2ZyB4PSI4NSIgeT0iNDUiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPgo8L3N2Zz4K">
                                 <div class="combo-name">${product.tenSP}</div>
                                 <div class="combo-price">₫<fmt:formatNumber value="${product.donGia}" pattern="#,###"/></div>
                                 <div class="combo-quantity" style="display: none;">
@@ -684,14 +728,8 @@
                     </c:forEach>
                 </div>
                 
-                <div class="combo-summary" id="comboSummary" style="display: none;">
-                    <div class="combo-summary-title">Tóm tắt combo đã chọn:</div>
-                    <div id="comboDetails"></div>
-                    <div class="combo-total">
-                        <span>Tổng combo:</span>
-                        <span id="comboTotal">₫0</span>
-                    </div>
-                </div>
+                <!-- Ẩn tóm tắt combo riêng lẻ -->
+                <div class="combo-summary" id="comboSummary" style="display: none;"></div>
             </div>
 
             <!-- TOTAL SUMMARY SECTION -->
@@ -702,35 +740,78 @@
                 </div>
                 <div class="total-summary-content">
                     <div id="totalBreakdown" class="total-breakdown">
-                        <div class="price-row"><span>Ghế đã chọn:</span><span>₫0</span></div>
-                        <div class="price-row"><span>Combo đã chọn:</span><span>₫0</span></div>
+                        <div class="price-row"><span>Ghế đã chọn:</span><span id="seatTotalDisplay">₫0</span></div>
+                        <div id="summarySeatList" style="font-size: 13px; color: #fff; opacity: .95;"></div>
+
+                        <div class="price-row"><span>Combo đã chọn:</span><span id="comboTotalDisplay">₫0</span></div>
+                        <div id="summaryComboList" style="font-size: 13px; color: #fff; opacity: .95;"></div>
+
                         <div class="price-row total"><span>TỔNG CỘNG:</span><span id="grandTotalDisplay">₫0</span></div>
                     </div>
+
+                    <!-- Phương thức thanh toán nằm NGOÀI form -->
+                    <div style="margin-top:14px; background: rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.2); border-radius:10px; padding:12px;">
+                        <div style="font-weight:700; margin-bottom:6px;">Phương thức thanh toán</div>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="radio" name="paymentMethodView" value="VNPAY" checked>
+                            VNPAY
+                        </label>
+                    </div>
+
+                    <!-- Form xác nhận: KHÔNG chứa radio payment -->
+                    <form id="bookingForm" method="POST" action="booking?action=confirmBooking" style="margin-top: 16px;">
+                        <input type="hidden" name="maPhim" value="${movie.maPhim}">
+                        <input type="hidden" name="maSuatChieu" value="${showtime.maSuatChieu}">
+                        <input type="hidden" name="selectedSeats" id="selectedSeatsInput" value="">
+                        <input type="hidden" name="selectedProducts" id="selectedProductsInput" value="">
+                        <div class="action-buttons" style="margin-top: 0;">
+                            <a href="booking?action=selectShowtime&maPhim=${movie.maPhim}" class="btn btn-secondary">
+                                ← Chọn lại suất chiếu
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="confirmBtn" disabled style="min-width: 200px;">
+                                ✓ Xác Nhận
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <br>
-            <div class="action-buttons">
-                <a href="showtime-selection?maPhim=${movie.maPhim}" class="btn btn-secondary">
-                    ← Chọn lại suất chiếu
-                </a>
-                <form id="bookingForm" method="POST" action="seat-selection" style="flex: 1;">
-                    <input type="hidden" name="maPhim" value="${movie.maPhim}">
-                    <input type="hidden" name="maSuatChieu" value="${showtime.maSuatChieu}">
-                    <input type="hidden" name="selectedSeats" id="selectedSeatsInput" value="">
-                    <input type="hidden" name="selectedProducts" id="selectedProductsInput" value="">
-                    <button type="submit" class="btn btn-primary" id="confirmBtn" disabled style="width: 100%;">
-                        ✓ Thanh Toán
-                    </button>
-                </form>
+
+            <!-- BỎ khối chi tiết dưới, vì đã gộp vào tóm tắt -->
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL QUY ĐỊNH ĐẶT VÉ -->
+<div id="termsModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: #fff; width: 90%; max-width: 520px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.2); overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #eee; background: #f8f9fa;">
+            <h3 style="margin:0; color:#e50914;">Quy định về đặt vé</h3>
+        </div>
+        <div style="padding: 16px 20px; max-height: 60vh; overflow:auto; color:#333; line-height:1.6;">
+            <ul style="padding-left: 18px; margin: 0;">
+                <li>Vé đã đặt không hoàn, không hủy, không đổi suất chiếu.</li>
+                <li>Vui lòng kiểm tra kỹ phim, rạp, suất chiếu và vị trí ghế trước khi xác nhận.</li>
+                <li>Vui lòng thanh toán trong vòng 15 phút để giữ chỗ; quá thời hạn hệ thống sẽ tự động hủy giữ chỗ.</li>
+                <li>Trong trường hợp giao dịch thất bại, ghế đã giữ sẽ được giải phóng và bạn có thể đặt lại nếu còn trống.</li>
+            </ul>
+            <div style="margin-top: 14px;">
+                <label style="display:flex; gap:8px; align-items:center; cursor:pointer;">
+                    <input type="checkbox" id="termsCheckbox"/>
+                    Tôi đã đọc và đồng ý với các quy định đặt vé.
+                </label>
             </div>
+        </div>
+        <div style="padding: 14px 20px; border-top: 1px solid #eee; display:flex; gap:10px; justify-content:flex-end; background:#fff;">
+            <button type="button" id="termsCancelBtn" style="padding:10px 16px; border:1px solid #ddd; background:#f5f5f5; border-radius:8px; cursor:pointer;">Hủy</button>
+            <button type="button" id="termsAgreeBtn" disabled style="padding:10px 16px; border:none; background:#e50914; color:#fff; border-radius:8px; cursor:not-allowed;">Đồng ý & Tiếp tục</button>
         </div>
     </div>
 </div>
 
 <script>
     const selectedSeats = new Map(); // Map to store {seatId: {name, price}}
-    const basePrice = parseFloat('<fmt:formatNumber value="${showtime.giaVeCoSo}" type="number"/>');
+    const basePrice = ${showtime.giaVeCoSo};
     
     // Map seat prices by seat ID
     const seatPrices = new Map();
@@ -748,9 +829,9 @@
     }
 
     function getPrice(seatId) {
-        const price = seatPrices.get(seatId) || basePrice;
-        console.log('getPrice for seatId:', seatId, 'returned:', price);
-        return price;
+        const p = seatPrices.get(seatId);
+        if (typeof p === 'number' && !isNaN(p)) return p;
+        return basePrice;
     }
 
     function selectSeat(element) {
@@ -788,8 +869,34 @@
         updateSummary();
     }
 
+    // Image loading handler
+    function handleImageLoad(img) {
+        img.classList.add('loaded');
+    }
+    
+    function handleImageError(img) {
+        img.classList.add('error');
+        if (img.dataset.fallback) {
+            img.src = img.dataset.fallback;
+        }
+    }
+    
     // Attach click handlers to all seat elements
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle image loading
+        document.querySelectorAll('img').forEach(img => {
+            if (img.complete) {
+                if (img.naturalHeight !== 0) {
+                    handleImageLoad(img);
+                } else {
+                    handleImageError(img);
+                }
+            } else {
+                img.addEventListener('load', () => handleImageLoad(img));
+                img.addEventListener('error', () => handleImageError(img));
+            }
+        });
+        
         // Attach click handlers to all available seats (not booked or maintenance)
         document.querySelectorAll('.seat').forEach(seat => {
             if (!seat.classList.contains('booked') && !seat.classList.contains('maintenance')) {
@@ -801,6 +908,61 @@
             }
         });
         
+        // Modal quy định đặt vé - chặn submit nếu chưa đồng ý
+        const form = document.getElementById('bookingForm');
+        const termsModal = document.getElementById('termsModal');
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const termsAgreeBtn = document.getElementById('termsAgreeBtn');
+        const termsCancelBtn = document.getElementById('termsCancelBtn');
+
+        // Hidden input để gửi kèm nếu cần phía server
+        let termsInput = document.querySelector('input[name="termsAccepted"]');
+        if (!termsInput) {
+            termsInput = document.createElement('input');
+            termsInput.type = 'hidden';
+            termsInput.name = 'termsAccepted';
+            termsInput.value = '';
+            form.appendChild(termsInput);
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Chỉ hiện modal nếu có ghế được chọn
+                const hasSeats = selectedSeats.size > 0;
+                if (!hasSeats) return; // để mặc định chặn bởi nút disabled
+
+                // Nếu chưa đồng ý, mở modal và chặn submit
+                if (termsInput.value !== 'true') {
+                    e.preventDefault();
+                    termsModal.style.display = 'flex';
+                }
+            });
+        }
+
+        termsCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                termsAgreeBtn.disabled = false;
+                termsAgreeBtn.style.cursor = 'pointer';
+                termsAgreeBtn.style.opacity = '1';
+            } else {
+                termsAgreeBtn.disabled = true;
+                termsAgreeBtn.style.cursor = 'not-allowed';
+                termsAgreeBtn.style.opacity = '.8';
+            }
+        });
+
+        termsCancelBtn.addEventListener('click', function() {
+            termsModal.style.display = 'none';
+        });
+
+        termsAgreeBtn.addEventListener('click', function() {
+            if (termsCheckbox.checked) {
+                termsInput.value = 'true';
+                termsModal.style.display = 'none';
+                form.submit();
+            }
+        });
+
         console.log('Seat selection initialized. Available seats:', 
             document.querySelectorAll('.seat:not(.booked):not(.maintenance)').length);
         
@@ -836,9 +998,7 @@
         let details = '';
         
         selectedSeats.forEach((seat, seatId) => {
-            console.log('Processing seat:', seatId, seat);
-            const price = parseFloat(seat.price);
-            console.log('Seat price:', price);
+            const price = Number(seat.price) || 0;
             total += price;
             const seatInfo = '<div class="price-row"><span>' + seat.name + ' (' + seat.type + ')</span><span>₫' + price.toLocaleString('vi-VN') + '</span></div>';
             details += seatInfo;
@@ -918,6 +1078,7 @@
         const productId = element.getAttribute('data-product-id');
         const productPrice = parseFloat(element.getAttribute('data-product-price'));
         const productName = element.querySelector('.combo-name').textContent;
+        const productThumb = element.querySelector('.combo-image') ? element.querySelector('.combo-image').getAttribute('src') : '';
         const quantityElement = element.querySelector('.combo-quantity');
         const quantityInput = element.querySelector('.quantity-input');
         
@@ -936,7 +1097,8 @@
             selectedProducts.set(productId, {
                 name: productName,
                 price: productPrice,
-                quantity: 1
+                quantity: 1,
+                thumb: productThumb
             });
             quantityInput.value = 1;
             console.log('Selected product:', productId, 'data:', selectedProducts.get(productId));
@@ -1023,7 +1185,7 @@
         // Tính tổng giá ghế
         let seatTotal = 0;
         selectedSeats.forEach((seat) => {
-            const price = parseFloat(seat.price);
+            const price = Number(seat.price) || 0;
             seatTotal += price;
         });
         
@@ -1052,14 +1214,46 @@
         const totalBreakdown = document.getElementById('totalBreakdown');
         if (totalBreakdown) {
             let breakdown = '';
-            if (seatTotal > 0) {
-                breakdown += '<div class="price-row"><span>Ghế đã chọn:</span><span>₫' + seatTotal.toLocaleString('vi-VN') + '</span></div>';
-            }
-            if (comboTotal > 0) {
-                breakdown += '<div class="price-row"><span>Combo đã chọn:</span><span>₫' + comboTotal.toLocaleString('vi-VN') + '</span></div>';
-            }
+            breakdown += '<div class="price-row"><span>Ghế đã chọn:</span><span>₫' + seatTotal.toLocaleString('vi-VN') + '</span></div>';
+            breakdown += '<div id="summarySeatList"></div>';
+            breakdown += '<div class="price-row"><span>Combo đã chọn:</span><span>₫' + comboTotal.toLocaleString('vi-VN') + '</span></div>';
+            breakdown += '<div id="summaryComboList"></div>';
             breakdown += '<div class="price-row total"><span>TỔNG CỘNG:</span><span>₫' + grandTotal.toLocaleString('vi-VN') + '</span></div>';
             totalBreakdown.innerHTML = breakdown;
+        }
+        
+        // Danh sách ghế trong tóm tắt
+        const summarySeatList = document.getElementById('summarySeatList');
+        if (summarySeatList) {
+            if (seatTotal > 0) {
+                let seatList = '';
+                selectedSeats.forEach((seat) => {
+                    seatList += '<div>• ' + seat.name + ' (' + seat.type + ') - ₫' + (Number(seat.price)||0).toLocaleString('vi-VN') + '</div>';
+                });
+                summarySeatList.innerHTML = seatList;
+            } else {
+                summarySeatList.innerHTML = '';
+            }
+        }
+        
+        // Danh sách combo với thumbnail nhỏ trong tóm tắt
+        const summaryComboList = document.getElementById('summaryComboList');
+        if (summaryComboList) {
+            if (comboTotal > 0) {
+                let comboList = '';
+                selectedProducts.forEach((p) => {
+                    const subtotal = (p.price * p.quantity) || 0;
+                    const thumb = p.thumb ? p.thumb : '';
+                    comboList += '<div style="display:flex; align-items:center; gap:8px; margin:4px 0;">'
+                        + (thumb ? ('<img src="' + thumb + '" alt="thumb" style="width:28px;height:28px;object-fit:cover;border-radius:4px;">') : '')
+                        + '<span>' + p.name + ' x' + p.quantity + '</span>'
+                        + '<span style="margin-left:auto;">₫' + subtotal.toLocaleString('vi-VN') + '</span>'
+                        + '</div>';
+                });
+                summaryComboList.innerHTML = comboList;
+            } else {
+                summaryComboList.innerHTML = '';
+            }
         }
         
         console.log('Total Summary - Seats:', seatTotal, 'Combo:', comboTotal, 'Grand Total:', grandTotal);

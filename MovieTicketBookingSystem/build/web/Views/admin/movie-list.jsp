@@ -161,6 +161,24 @@
                 object-fit: cover;
                 border-radius: 4px;
                 border: 1px solid #e9ecef;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+            
+            .movie-poster.loaded {
+                opacity: 1;
+            }
+            
+            .movie-poster.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 10px;
+                text-align: center;
             }
             
             .movie-info {
@@ -296,7 +314,7 @@
                                     <img src="${pageContext.request.contextPath}/assets/image/${movie.poster}" 
                                          alt="${movie.tenPhim}" 
                                          class="movie-poster"
-                                         onerror="this.src='https://via.placeholder.com/60x80?text=No+Image'">
+                                         data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA2MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0zMCAyMEMzMCAxNi42ODYzIDMyLjY4NjMgMTQgMzYgMTRIMjRDMjcuMzEzNyAxNCAzMCAxNi42ODYzIDMwIDIwVjYwQzMwIDYzLjMxMzcgMjcuMzEzNyA2NiAyNCA2NkgzNkMzMi42ODYzIDY2IDMwIDYzLjMxMzcgMzAgNjBWMjBaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxzdmcgeD0iMjIiIHk9IjM1IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                                 </td>
                                 <td>
                                     <div class="movie-info">
@@ -360,6 +378,34 @@
 </div>
 
 <script>
+    // Image loading handler
+    function handleImageLoad(img) {
+        img.classList.add('loaded');
+    }
+    
+    function handleImageError(img) {
+        img.classList.add('error');
+        if (img.dataset.fallback) {
+            img.src = img.dataset.fallback;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle image loading
+        document.querySelectorAll('img').forEach(img => {
+            if (img.complete) {
+                if (img.naturalHeight !== 0) {
+                    handleImageLoad(img);
+                } else {
+                    handleImageError(img);
+                }
+            } else {
+                img.addEventListener('load', () => handleImageLoad(img));
+                img.addEventListener('error', () => handleImageError(img));
+            }
+        });
+    });
+    
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();

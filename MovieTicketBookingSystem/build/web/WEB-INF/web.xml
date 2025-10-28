@@ -18,6 +18,7 @@
     <servlet>
         <servlet-name>LogoutController</servlet-name>
         <servlet-class>controller.LogoutController</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>HomePageController</servlet-name>
@@ -171,6 +172,16 @@
     <servlet-mapping>
         <servlet-name>AdminProductServlet</servlet-name>
         <url-pattern>/admin-products</url-pattern>
+    </servlet-mapping>
+    <!-- Admin Ticket Management -->
+    <servlet>
+        <servlet-name>AdminTicketServlet</servlet-name>
+        <servlet-class>controller.AdminTicketServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminTicketServlet</servlet-name>
+        <url-pattern>/admin-tickets</url-pattern>
     </servlet-mapping>
     <!-- Admin Movie Management -->
     <servlet>

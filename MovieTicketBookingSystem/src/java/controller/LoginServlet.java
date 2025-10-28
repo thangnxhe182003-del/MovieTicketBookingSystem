@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import model.Customer;
 import model.Staff;
 
@@ -51,6 +53,7 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         boolean remember = request.getParameter("remember") != null;
+        String next = request.getParameter("next");
         
         if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin!");
@@ -92,7 +95,12 @@ public class LoginServlet extends HttpServlet {
                 // This would typically involve cookies
             }
             
-            response.sendRedirect("home");
+            if (next != null && !next.trim().isEmpty()) {
+                String decodedNext = URLDecoder.decode(next, StandardCharsets.UTF_8);
+                response.sendRedirect(decodedNext);
+            } else {
+                response.sendRedirect("home");
+            }
             return;
         }
         

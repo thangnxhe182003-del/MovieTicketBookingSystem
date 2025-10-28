@@ -42,7 +42,7 @@
             <a href="movie?action=detail&maPhim=${movie.maPhim}" style="color: #e50914; text-decoration: none; font-weight: 600;">← Quay lại</a>
             <h2 style="margin: 0; color: #333;">Chọn suất chiếu</h2>
         </div>
-        <form id="showtimeForm" method="post" action="showtime-selection">
+        <form id="showtimeForm" method="post" action="booking?action=selectSeats">
             <input type="hidden" name="maPhim" value="${movie.maPhim}">
             <input type="hidden" name="maSuatChieu" id="selectedShowtime" value="">
             
@@ -53,13 +53,23 @@
                     </h3>
                     <div class="showtime-grid">
                         <c:forEach var="showtime" items="${dateEntry.value}">
-                            <div class="showtime-card" onclick="selectShowtime(${showtime.maSuatChieu})">
+                            <div class="showtime-card" onclick="selectShowtime(${showtime.maSuatChieu}, event)">
                                 <div class="showtime-time">
-                                    ${showtime.gioBatDau.format(timeFormatter)} - ${showtime.gioKetThuc.format(timeFormatter)}
+                                    <%
+                                        java.time.format.DateTimeFormatter tf = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+                                        Object _stObj = pageContext.findAttribute("showtime");
+                                        String _start = "";
+                                        String _end = "";
+                                        if (_stObj != null && _stObj instanceof model.Showtime) {
+                                            model.Showtime _st = (model.Showtime) _stObj;
+                                            if (_st.getGioBatDau() != null) _start = _st.getGioBatDau().format(tf);
+                                            if (_st.getGioKetThuc() != null) _end = _st.getGioKetThuc().format(tf);
+                                        }
+                                    %>
+                                    <%= _start %> - <%= _end %>
                                 </div>
                                 <div class="showtime-room">${showtime.tenRap} - Phòng ${showtime.tenPhong}</div>
                                 <div class="showtime-language">${showtime.ngonNguAmThanh}</div>
-<!--                                <div class="showtime-price">${showtime.giaVeCoSo} VNĐ</div>-->
                             </div>
                         </c:forEach>
                     </div>
@@ -72,7 +82,7 @@
 </div>
 
 <script>
-    function selectShowtime(maSuatChieu) {
+    function selectShowtime(maSuatChieu, event) {
         // Remove previous selection
         document.querySelectorAll('.showtime-card').forEach(card => {
             card.classList.remove('selected');
