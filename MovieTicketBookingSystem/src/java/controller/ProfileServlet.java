@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.LocalDate;
 import model.Customer;
 
 public class ProfileServlet extends HttpServlet {
@@ -39,6 +40,33 @@ public class ProfileServlet extends HttpServlet {
         String soDT = request.getParameter("phone");
         String email = request.getParameter("email");
 
+        // Validation phía server
+        String errorMessage = null;
+
+        // Validate số điện thoại
+        if (soDT == null || !soDT.matches("^0\\d{9}$")) {
+            errorMessage = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0.";
+        }
+
+        // Validate ngày sinh
+        if (ngaySinh != null && !ngaySinh.isEmpty()) {
+            try {
+                LocalDate dob = LocalDate.parse(ngaySinh);
+                LocalDate today = LocalDate.now();
+                if (dob.isAfter(today)) {
+                    errorMessage = "Ngày sinh không được lớn hơn ngày hiện tại.";
+                }
+            } catch (Exception e) {
+                errorMessage = "Ngày sinh không hợp lệ.";
+            }
+        }
+
+        if (errorMessage != null) {
+            request.setAttribute("error", errorMessage);
+            request.getRequestDispatcher("Views/common/profile.jsp").forward(request, response);
+            return;
+        }
+
         Customer updated = new Customer();
         updated.setMaKH(logged.getMaKH());
         updated.setHoTen(hoTen);
@@ -50,7 +78,6 @@ public class ProfileServlet extends HttpServlet {
         CustomerDAO dao = new CustomerDAO();
         boolean ok = dao.updateProfile(updated);
         if (ok) {
-            // refresh session user minimal fields
             logged.setHoTen(hoTen);
             logged.setNgaySinh(ngaySinh);
             logged.setGioiTinh(gioiTinh);
@@ -64,5 +91,3 @@ public class ProfileServlet extends HttpServlet {
         request.getRequestDispatcher("Views/common/profile.jsp").forward(request, response);
     }
 }
-
-
