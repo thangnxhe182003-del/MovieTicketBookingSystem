@@ -17,6 +17,8 @@
             .btn { padding:12px 16px; border:none; border-radius:6px; font-weight:700; cursor:pointer; }
             .btn-primary { background:#e50914; color:#fff; }
             .btn-secondary { background:#f0f0f0; color:#333; }
+            .error-message { color: #e50914; font-size: 12px; margin-top: 4px; display: none; }
+            .input-error { border-color: #e50914; }
         </style>
     "/>
 </jsp:include>
@@ -24,7 +26,7 @@
 <div class="page-screen">
     <div class="form-container">
         <div class="form-header">Cập nhật thông tin cá nhân</div>
-        <form class="form-content" method="post" action="profile">
+        <form class="form-content" method="post" action="profile" id="profileForm">
             <div class="form-row full">
                 <div class="form-group">
                     <label>Họ và tên</label>
@@ -34,7 +36,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Ngày sinh</label>
-                    <input type="date" name="dob" value="${sessionScope.loggedInUser.ngaySinh}">
+                    <input type="date" name="dob" id="dob" value="${sessionScope.loggedInUser.ngaySinh}">
+                    <div id="dobError" class="error-message">Ngày sinh không được lớn hơn ngày hiện tại</div>
                 </div>
                 <div class="form-group">
                     <label>Giới tính</label>
@@ -48,11 +51,12 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Số điện thoại</label>
-                    <input type="tel" name="phone" value="${sessionScope.loggedInUser.soDienThoai}" required>
+                    <input type="tel" name="phone" id="phone" value="${sessionScope.loggedInUser.soDienThoai}" required>
+                    <div id="phoneError" class="error-message">Số điện thoại phải có 10 chữ số và bắt đầu bằng 0</div>
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" value="${sessionScope.loggedInUser.email}" readonly="">
+                    <input type="email" name="email" value="${sessionScope.loggedInUser.email}" readonly>
                 </div>
             </div>
             <div class="actions">
@@ -63,6 +67,70 @@
     </div>
 </div>
 
+<script>
+    // Thiết lập ngày tối đa cho input date là ngày hiện tại
+    document.addEventListener('DOMContentLoaded', function() {
+        const dobInput = document.getElementById('dob');
+        const today = new Date().toISOString().split('T')[0];
+        dobInput.setAttribute('max', today);
+
+        const form = document.getElementById('profileForm');
+        const phoneInput = document.getElementById('phone');
+        const phoneError = document.getElementById('phoneError');
+        const dobError = document.getElementById('dobError');
+
+        // Hàm kiểm tra số điện thoại
+        function validatePhone(phone) {
+            const phoneRegex = /^0\d{9}$/;
+            return phoneRegex.test(phone);
+        }
+
+        // Hàm kiểm tra ngày sinh
+        function validateDob(dob) {
+            const selectedDate = new Date(dob);
+            const currentDate = new Date();
+            return selectedDate <= currentDate;
+        }
+
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+
+            // Validate số điện thoại
+            if (!validatePhone(phoneInput.value)) {
+                phoneError.style.display = 'block';
+                phoneInput.classList.add('input-error');
+                isValid = false;
+            } else {
+                phoneError.style.display = 'none';
+                phoneInput.classList.remove('input-error');
+            }
+
+            // Validate ngày sinh
+            if (dobInput.value && !validateDob(dobInput.value)) {
+                dobError.style.display = 'block';
+                dobInput.classList.add('input-error');
+                isValid = false;
+            } else {
+                dobError.style.display = 'none';
+                dobInput.classList.remove('input-error');
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+
+        // Xóa thông báo lỗi khi người dùng nhập lại
+        phoneInput.addEventListener('input', function() {
+            phoneError.style.display = 'none';
+            phoneInput.classList.remove('input-error');
+        });
+
+        dobInput.addEventListener('input', function() {
+            dobError.style.display = 'none';
+            dobInput.classList.remove('input-error');
+        });
+    });
+</script>
+
 <jsp:include page="../layout/footer.jsp" />
-
-
