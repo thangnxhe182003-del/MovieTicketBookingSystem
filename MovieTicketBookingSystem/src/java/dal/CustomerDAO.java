@@ -93,20 +93,38 @@ public class CustomerDAO extends DBContext {
      * Cập nhật thông tin hồ sơ người dùng (không bao gồm mật khẩu, trạng thái, verified)
      */
     public boolean updateProfile(Customer customer) {
-        String sql = "UPDATE dbo.Customer SET HoTen = ?, NgaySinh = ?, GioiTinh = ?, SoDienThoai = ?, Email = ?, NgayCapNhat = SYSUTCDATETIME() WHERE MaKH = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, customer.getHoTen());
-            ps.setString(2, customer.getNgaySinh());
-            ps.setString(3, customer.getGioiTinh());
-            ps.setString(4, customer.getSoDienThoai());
-            ps.setString(5, customer.getEmail());
-            ps.setInt(6, customer.getMaKH());
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
+    String sql = "UPDATE dbo.Customer SET HoTen = ?, NgaySinh = ?, GioiTinh = ?, SoDienThoai = ?, Email = ?, NgayCapNhat = SYSUTCDATETIME() WHERE MaKH = ?";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        ps.setString(1, customer.getHoTen());
+        if (customer.getNgaySinh() == null || customer.getNgaySinh().isEmpty()) {
+            ps.setNull(2, java.sql.Types.DATE);
+        } else {
+            ps.setDate(2, java.sql.Date.valueOf(customer.getNgaySinh()));
         }
+        ps.setString(3, customer.getGioiTinh());
+        // Validate số điện thoại trong DAO
+        if (!customer.getSoDienThoai().matches("^0\\d{9}$")) {
+            throw new SQLException("Số điện thoại không hợp lệ.");
+        }
+        // Kiểm tra số điện thoại có trùng với khách hàng khác không
+        String checkPhoneSql = "SELECT COUNT(*) FROM Customer WHERE SoDienThoai = ? AND MaKH != ?";
+        try (PreparedStatement checkPs = connection.prepareStatement(checkPhoneSql)) {
+            checkPs.setString(1, customer.getSoDienThoai());
+            checkPs.setInt(2, customer.getMaKH());
+            ResultSet rs = checkPs.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                throw new SQLException("Số điện thoại đã được sử dụng.");
+            }
+        }
+        ps.setString(4, customer.getSoDienThoai());
+        ps.setString(5, customer.getEmail());
+        ps.setInt(6, customer.getMaKH());
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        System.out.println("Error updating profile: " + e.getMessage());
         return false;
     }
+}
 
     /**
      * Đổi mật khẩu an toàn, xác nhận mật khẩu cũ
