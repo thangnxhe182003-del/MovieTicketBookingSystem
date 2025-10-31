@@ -254,16 +254,21 @@ ${param.extraStyles}
 
 <!-- ==== HEADER ==== -->
 <header>
+    
     <div class="header-left">
         <a href="home" class="logo">
             <img src="https://png.pngtree.com/element_origin_min_pic/16/12/04/906aae676011fbcc70e96932704830e3.jpg" alt="MovieNow Logo">
             <span>MovieNow</span>
         </a>
 
-        <form class="search-bar" method="GET" action="home">
-            <i class="fas fa-search"></i>
-            <input type="text" name="q" placeholder="Tìm phim..." value="${param.q}">
-        </form>
+        <div class="search-container" style="position:relative; width:300px;">
+    <i class="fas fa-search" style="position:absolute; left:12px; top:14px; color:#999;"></i>
+    <input type="text" id="liveSearch" placeholder="Tìm phim..." 
+           style="width:100%; padding:12px 12px 12px 36px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none;">
+    <div id="liveResults" 
+         style="position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #ddd; border-top:none; max-height:400px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,.12); display:none; z-index:1000;">
+    </div>
+</div>
     </div>
 
     <nav>
@@ -316,3 +321,40 @@ ${param.extraStyles}
         </div>
     </c:if>
 </div>
+<script>
+let timeout;
+document.getElementById('liveSearch').addEventListener('input', function(e) {
+    clearTimeout(timeout);
+    const q = e.target.value.trim();
+    const results = document.getElementById('liveResults');
+    if (!q) { results.style.display = 'none'; results.innerHTML = ''; return; }
+
+    timeout = setTimeout(() => {
+        fetch('search-ajax?q=' + encodeURIComponent(q))
+            .then(r => r.text())
+            .then(html => {
+                results.innerHTML = html;
+                results.style.display = html ? 'block' : 'none';
+            });
+    }, 150);
+});
+
+// Ẩn khi click ngoài
+document.addEventListener('click', e => {
+    if (!e.target.closest('.search-container')) {
+        document.getElementById('liveResults').style.display = 'none';
+    }
+});
+
+// Thử ảnh lỗi
+function tryImage(img) {
+    const exts = ['.jpg','.jpeg','.png','.webp'];
+    const base = img.dataset.base;
+    let i = 0;
+    img.onerror = () => {
+        if (i < exts.length) img.src = base + exts[i++];
+        else img.src = 'https://via.placeholder.com/50x75?text=No+Img';
+    };
+    img.onerror();
+}
+</script>
