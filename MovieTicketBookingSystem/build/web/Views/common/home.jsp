@@ -122,12 +122,7 @@
         </div>
 
             <div class="home-body">
-                <c:if test="${not empty searchQuery}">
-                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #e50914;">
-                        <h2 style="margin: 0 0 8px 0; color: #333;">Kết quả tìm kiếm cho: "${searchQuery}"</h2>
-                        <p style="margin: 0; color: #666;">Tìm thấy ${movies.size()} phim</p>
-                    </div>
-                </c:if>
+                
             <div class="tabs">
                 <button class="tab-btn active" data-tab="now">Đang chiếu</button>
                 <button class="tab-btn" data-tab="upcoming">Sắp chiếu</button>
