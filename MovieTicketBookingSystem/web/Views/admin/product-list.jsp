@@ -249,7 +249,7 @@
                                 <img src="${pageContext.request.contextPath}/assets/image/${product.thumbnailUrl}" 
                                      alt="${product.tenSP}" 
                                      class="product-image"
-                                     onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                                     onerror="this.src='https://iguov8nhvyobj.vcdn.cloud/media/wysiwyg/2025/052025/240x201_2_.jpg'">
                             </td>
                             <td>
                                 <div class="product-name">${product.tenSP}</div>

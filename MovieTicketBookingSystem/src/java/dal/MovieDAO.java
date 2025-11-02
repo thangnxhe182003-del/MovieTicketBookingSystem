@@ -2,6 +2,8 @@ package dal;
 
 import model.Movie;
 import java.sql.*;
+import java.util.TimeZone;
+import java.util.Calendar;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,9 +17,8 @@ public class MovieDAO extends DBContext {
     public List<Movie> getAllMovies() {
         List<Movie> movies = new ArrayList<>();
         String sql = "SELECT * FROM dbo.Movie ORDER BY NgayKhoiChieu DESC";
-        
-        try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+
+        try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 movies.add(mapRowToMovie(rs));
             }
@@ -32,7 +33,7 @@ public class MovieDAO extends DBContext {
      */
     public Movie getMovieById(int maPhim) {
         String sql = "SELECT * FROM dbo.Movie WHERE MaPhim = ?";
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, maPhim);
             try (ResultSet rs = ps.executeQuery()) {
@@ -51,12 +52,11 @@ public class MovieDAO extends DBContext {
      */
     public List<Movie> getUpcomingMovies() {
         List<Movie> movies = new ArrayList<>();
-        String sql = "SELECT * FROM dbo.Movie WHERE NgayKhoiChieu IS NOT NULL " +
-                    "AND NgayKhoiChieu >= CAST(GETDATE() AS DATE) " +
-                    "ORDER BY NgayKhoiChieu ASC";
-        
-        try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+        String sql = "SELECT * FROM dbo.Movie WHERE NgayKhoiChieu IS NOT NULL "
+                + "AND NgayKhoiChieu >= CAST(GETDATE() AS DATE) "
+                + "ORDER BY NgayKhoiChieu ASC";
+
+        try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 movies.add(mapRowToMovie(rs));
             }
@@ -72,7 +72,7 @@ public class MovieDAO extends DBContext {
     public List<Movie> searchMovies(String keyword) {
         List<Movie> movies = new ArrayList<>();
         String sql = "SELECT * FROM dbo.Movie WHERE TenPhim LIKE ? ORDER BY NgayKhoiChieu DESC";
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
             try (ResultSet rs = ps.executeQuery()) {
@@ -92,7 +92,7 @@ public class MovieDAO extends DBContext {
     public List<Movie> getMoviesByCategory(String theLoai) {
         List<Movie> movies = new ArrayList<>();
         String sql = "SELECT * FROM dbo.Movie WHERE TheLoai = ? ORDER BY NgayKhoiChieu DESC";
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, theLoai);
             try (ResultSet rs = ps.executeQuery()) {
@@ -110,10 +110,11 @@ public class MovieDAO extends DBContext {
      * Thêm phim mới
      */
     public boolean addMovie(Movie movie) {
-        String sql = "INSERT INTO dbo.Movie (TenPhim, TheLoai, LoaiPhim, DaoDien, DienVien, " +
-                    "DoTuoiGioiHan, ThoiLuong, NoiDung, NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+        String sql = "INSERT INTO dbo.Movie (TenPhim, TheLoai, LoaiPhim, DaoDien, DienVien, "
+                + "DoTuoiGioiHan, ThoiLuong, NoiDung, NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, movie.getTenPhim());
             ps.setString(2, movie.getTheLoai());
@@ -123,12 +124,17 @@ public class MovieDAO extends DBContext {
             ps.setInt(6, movie.getDoTuoiGioiHan());
             ps.setInt(7, movie.getThoiLuong());
             ps.setString(8, movie.getNoiDung());
-            ps.setTimestamp(9, movie.getNgayKhoiChieu() != null ? 
-                java.sql.Timestamp.valueOf(movie.getNgayKhoiChieu()) : null);
+
+            if (movie.getNgayKhoiChieu() != null) {
+                ps.setTimestamp(9, Timestamp.valueOf(movie.getNgayKhoiChieu()), utcCal);
+            } else {
+                ps.setNull(9, Types.TIMESTAMP);
+            }
+
             ps.setString(10, movie.getPoster());
             ps.setString(11, movie.getNgonNguPhuDe());
             ps.setString(12, movie.getTrangThai() != null ? movie.getTrangThai() : "Sắp chiếu");
-            
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -140,11 +146,12 @@ public class MovieDAO extends DBContext {
      * Cập nhật phim
      */
     public boolean updateMovie(Movie movie) {
-        String sql = "UPDATE dbo.Movie SET TenPhim = ?, TheLoai = ?, LoaiPhim = ?, " +
-                    "DaoDien = ?, DienVien = ?, DoTuoiGioiHan = ?, ThoiLuong = ?, " +
-                    "NoiDung = ?, NgayKhoiChieu = ?, Poster = ?, NgonNguPhuDe = ?, TrangThai = ? " +
-                    "WHERE MaPhim = ?";
-        
+        String sql = "UPDATE dbo.Movie SET TenPhim = ?, TheLoai = ?, LoaiPhim = ?, "
+                + "DaoDien = ?, DienVien = ?, DoTuoiGioiHan = ?, ThoiLuong = ?, "
+                + "NoiDung = ?, NgayKhoiChieu = ?, Poster = ?, NgonNguPhuDe = ?, TrangThai = ? "
+                + "WHERE MaPhim = ?";
+
+        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, movie.getTenPhim());
             ps.setString(2, movie.getTheLoai());
@@ -154,13 +161,18 @@ public class MovieDAO extends DBContext {
             ps.setInt(6, movie.getDoTuoiGioiHan());
             ps.setInt(7, movie.getThoiLuong());
             ps.setString(8, movie.getNoiDung());
-            ps.setTimestamp(9, movie.getNgayKhoiChieu() != null ? 
-                java.sql.Timestamp.valueOf(movie.getNgayKhoiChieu()) : null);
+
+            if (movie.getNgayKhoiChieu() != null) {
+                ps.setTimestamp(9, Timestamp.valueOf(movie.getNgayKhoiChieu()), utcCal);
+            } else {
+                ps.setNull(9, Types.TIMESTAMP);
+            }
+
             ps.setString(10, movie.getPoster());
             ps.setString(11, movie.getNgonNguPhuDe());
             ps.setString(12, movie.getTrangThai() != null ? movie.getTrangThai() : "Sắp chiếu");
             ps.setInt(13, movie.getMaPhim());
-            
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -173,7 +185,7 @@ public class MovieDAO extends DBContext {
      */
     public boolean deleteMovie(int maPhim) {
         String sql = "UPDATE dbo.Movie SET TrangThai = 'Ngừng chiếu' WHERE MaPhim = ?";
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, maPhim);
             return ps.executeUpdate() > 0;
@@ -197,26 +209,27 @@ public class MovieDAO extends DBContext {
         movie.setDoTuoiGioiHan(rs.getInt("DoTuoiGioiHan"));
         movie.setThoiLuong(rs.getInt("ThoiLuong"));
         movie.setNoiDung(rs.getString("NoiDung"));
-        
-        java.sql.Timestamp sqlNgayKhoiChieu = rs.getTimestamp("NgayKhoiChieu");
+
+        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Timestamp sqlNgayKhoiChieu = rs.getTimestamp("NgayKhoiChieu", utcCal);
         if (sqlNgayKhoiChieu != null) {
             movie.setNgayKhoiChieu(sqlNgayKhoiChieu.toLocalDateTime());
         }
-        
+
         movie.setPoster(rs.getString("Poster"));
         movie.setNgonNguPhuDe(rs.getString("NgonNguPhuDe"));
         movie.setTrangThai(rs.getString("TrangThai"));
-        
-        java.sql.Timestamp sqlTs = rs.getTimestamp("NgayTao");
+
+        Timestamp sqlTs = rs.getTimestamp("NgayTao", utcCal);
         if (sqlTs != null) {
             movie.setNgayTao(sqlTs.toLocalDateTime());
         }
-        
-        sqlTs = rs.getTimestamp("NgayCapNhat");
+
+        sqlTs = rs.getTimestamp("NgayCapNhat", utcCal);
         if (sqlTs != null) {
             movie.setNgayCapNhat(sqlTs.toLocalDateTime());
         }
-        
+
         return movie;
     }
 }

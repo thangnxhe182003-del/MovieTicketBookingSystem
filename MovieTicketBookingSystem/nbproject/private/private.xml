@@ -3,25 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/common/showtime-selection.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/common/movieDetail.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/layout/admin-header.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/dal/TicketDAO.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/common/seatSelection.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/controller/ShowtimeSelectionServlet.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/controller/LoginServlet.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/layout/header.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/model/Movie.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/controller/AdminShowtimeServlet.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/admin/movie-form.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/admin/showtime-form.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/dal/CustomerDAO.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/dal/ShowtimeDAO.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/admin/customer-list.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/WEB-INF/web.xml</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/admin/product-list.jsp</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/src/java/controller/LogoutController.java</file>
-            <file>file:/D:/JavaProject/MovieTicketBookingSystem/web/Views/common/home.jsp</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/web/WEB-INF/web.xml</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/web/Views/admin/product-list.jsp</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/web/Views/admin/movie-list.jsp</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/web/Views/admin/movie-form.jsp</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/src/java/controller/AdminMovieServlet.java</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/web/Views/admin/product-form.jsp</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/src/java/dal/DBContext.java</file>
+            <file>file:/D:/PRJ_Web_Codes/MovieTicketBookingSystem/MovieTicketBookingSystem/web/Views/common/home.jsp</file>
         </group>
     </open-files>
 </project-private>

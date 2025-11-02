@@ -177,4 +177,8 @@ public class Movie implements Serializable {
                 ", ngayKhoiChieu=" + ngayKhoiChieu +
                 '}';
     }
+    
+    public LocalDate getNgayKhoiChieuDate() {
+    return ngayKhoiChieu != null ? ngayKhoiChieu.toLocalDate() : null;
+}
 }
