@@ -144,6 +144,43 @@ public class SeatDAO extends DBContext {
         }
         return 0;
     }
+    
+    /**
+     * Get seat by row and column to check duplicate (using full code like "A01")
+     */
+    public Seat getSeatByFullCode(int maPhong, String fullSoGhe) {
+        String sql = "SELECT * FROM dbo.Seat WHERE MaPhong = ? AND SoGhe = ?";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, maPhong);
+            ps.setString(2, fullSoGhe.toUpperCase());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToSeat(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Check if seat has dependencies (e.g., tickets) - For BR-04, MSG-E11
+     */
+    public boolean hasDependencies(int maGhe) {
+        String sql = "SELECT TOP 1 1 FROM dbo.Ticket WHERE MaGhe = ?";  // Assume Ticket table exists
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, maGhe);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     /**
      * Thêm ghế mới
@@ -151,27 +188,26 @@ public class SeatDAO extends DBContext {
      */
     public boolean addSeat(Seat seat) {
         String sql = "INSERT INTO dbo.Seat (MaPhong, HangGhe, SoGhe, LoaiGhe, GhiChu, TrangThai) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, seat.getMaPhong());
-            ps.setString(2, seat.getHangGhe());
-            // SoGhe được lưu dưới dạng "A1", "B2", v.v. (đầy đủ hangGhe + số)
-            String soGhe = seat.getHangGhe() + String.format("%02d", seat.getSoGhe());
-            ps.setString(3, soGhe);
+            ps.setString(2, seat.getHangGhe().toUpperCase());
+            
+            // Lưu SoGhe dưới dạng VARCHAR "A01"
+            String fullSoGhe = seat.getHangGhe().toUpperCase() + String.format("%02d", seat.getSoGhe());
+            ps.setString(3, fullSoGhe);
+            
             ps.setString(4, seat.getLoaiGhe());
             ps.setString(5, seat.getGhiChu());
             ps.setString(6, seat.getTrangThai());
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            // Log lỗi chi tiết hơn
-            System.err.println("Lỗi khi thêm ghế: MaPhong=" + seat.getMaPhong() + 
-                             ", HangGhe=" + seat.getHangGhe() + 
-                             ", SoGhe=" + seat.getSoGhe());
+            System.err.println("Lỗi thêm ghế: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     /**
@@ -233,25 +269,19 @@ public class SeatDAO extends DBContext {
         Seat seat = new Seat();
         seat.setMaGhe(rs.getInt("MaGhe"));
         seat.setMaPhong(rs.getInt("MaPhong"));
-        seat.setHangGhe(rs.getString("HangGhe"));
         
-        // Parse soGhe from String to int (handle both "A1" format and "1" format)
-        String soGheStr = rs.getString("SoGhe");
-        int soGhe;
-        try {
-            // If SoGhe is in format "A1", extract "1"
-            if (soGheStr != null && !soGheStr.isEmpty() && Character.isLetter(soGheStr.charAt(0))) {
-                // Extract numeric part
-                String numericPart = soGheStr.replaceAll("[^0-9]", "");
-                soGhe = Integer.parseInt(numericPart);
-            } else {
-                // If SoGhe is just "1", parse directly
-                soGhe = Integer.parseInt(soGheStr);
+        String soGheStr = rs.getString("SoGhe");  // "A01"
+        if (soGheStr != null && soGheStr.length() >= 3) {
+            seat.setHangGhe(soGheStr.substring(0, 1).toUpperCase());  // "A"
+            try {
+                seat.setSoGhe(Integer.parseInt(soGheStr.substring(1)));  // "01" → 1
+            } catch (NumberFormatException e) {
+                seat.setSoGhe(0);
             }
-        } catch (NumberFormatException e) {
-            soGhe = 0; // Default value if parsing fails
+        } else {
+            seat.setHangGhe(rs.getString("HangGhe"));  // Fallback
+            seat.setSoGhe(0);
         }
-        seat.setSoGhe(soGhe);
         
         seat.setLoaiGhe(rs.getString("LoaiGhe"));
         seat.setGhiChu(rs.getString("GhiChu"));

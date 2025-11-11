@@ -118,6 +118,31 @@ public class RoomDAO extends DBContext {
         }
         return false;
     }
+    
+    /**
+     * Check dependency before delete (BR-04, MSG-E11)
+     * Check connect with Seats or Showtimes
+     */
+    public boolean hasDependencies(int maPhong) {
+        String sqlSeat = "SELECT TOP 1 1 FROM dbo.Seat WHERE MaPhong = ?";
+        String sqlShowtime = "SELECT TOP 1 1 FROM dbo.Showtime WHERE MaPhong = ?";  // Giả định table Showtime
+        
+        try (PreparedStatement psSeat = connection.prepareStatement(sqlSeat);
+             PreparedStatement psShow = connection.prepareStatement(sqlShowtime)) {
+            
+            psSeat.setInt(1, maPhong);
+            psShow.setInt(1, maPhong);
+            
+            try (ResultSet rsSeat = psSeat.executeQuery();
+                 ResultSet rsShow = psShow.executeQuery()) {
+                
+                return rsSeat.next() || rsShow.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     /**
      * Map ResultSet row to Room object

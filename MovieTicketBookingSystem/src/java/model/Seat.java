@@ -3,6 +3,7 @@ package model;
 import java.io.Serializable;
 
 public class Seat implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private int maGhe;
@@ -17,8 +18,8 @@ public class Seat implements Serializable {
     public Seat() {
     }
 
-    public Seat(int maGhe, int maPhong, String hangGhe, int soGhe, 
-                String loaiGhe, String trangThai) {
+    public Seat(int maGhe, int maPhong, String hangGhe, int soGhe,
+            String loaiGhe, String trangThai) {
         this.maGhe = maGhe;
         this.maPhong = maPhong;
         this.hangGhe = hangGhe;
@@ -88,13 +89,17 @@ public class Seat implements Serializable {
         return hangGhe + soGhe;
     }
 
+    public String getFullSeatCode() {
+        return hangGhe + String.format("%02d", soGhe);
+    }
+
     @Override
     public String toString() {
-        return "Seat{" +
-                "maGhe=" + maGhe +
-                ", hangGhe='" + hangGhe + '\'' +
-                ", soGhe=" + soGhe +
-                ", trangThai='" + trangThai + '\'' +
-                '}';
+        return "Seat{"
+                + "maGhe=" + maGhe
+                + ", hangGhe='" + hangGhe + '\''
+                + ", soGhe=" + soGhe
+                + ", trangThai='" + trangThai + '\''
+                + '}';
     }
 }

@@ -32,6 +32,11 @@
         </div>
         <a href="admin-rooms?action=create" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm phòng</a>
     </div>
+    <c:if test="${not empty param.message}">
+        <div class="alert ${param.type == 'error' ? 'alert-danger' : 'alert-success'}" style="margin-bottom: 20px; padding: 12px 16px; border: 1px solid; border-radius: 6px;">
+            <i class="fas fa-${param.type == 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${param.message}
+        </div>
+    </c:if>
 
     <div class="data-table">
         <table>
