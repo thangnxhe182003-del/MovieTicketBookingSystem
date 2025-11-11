@@ -14,7 +14,12 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getAllShowtimes() {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap "
+        // Dùng CONVERT để lấy datetime dưới dạng string trực tiếp, tránh timezone conversion
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.GiaVeTreEm, s.VAT, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -35,7 +40,11 @@ public class ShowtimeDAO extends DBContext {
      * Lấy suất chiếu theo ID
      */
     public Showtime getShowtimeById(int maSuatChieu) {
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.GiaVeTreEm, s.VAT, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -60,7 +69,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesByMovie(int maPhim) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster\n"
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.GiaVeTreEm, s.VAT, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster\n"
                 + "FROM dbo.Showtime s\n"
                 + "JOIN dbo.Movie  m  ON s.MaPhim  = m.MaPhim\n"
                 + "JOIN dbo.Room   rm ON s.MaPhong = rm.MaPhong\n"
@@ -87,7 +100,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesByDate(LocalDate date) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.GiaVeTreEm, s.VAT, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -113,7 +130,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesByRoom(int maPhong) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -139,7 +160,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesByMovieAndDate(int maPhim, LocalDate date) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -166,7 +191,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesByMovieAndCinema(int maPhim, int maRap) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -192,8 +221,8 @@ public class ShowtimeDAO extends DBContext {
      * Thêm suất chiếu mới
      */
     public boolean addShowtime(Showtime showtime) {
-        String sql = "INSERT INTO dbo.Showtime (MaPhim, MaPhong, NgayChieu, GioBatDau, GioKetThuc, GiaVeCoSo, NgonNguAmThanh) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO dbo.Showtime (MaPhim, MaPhong, NgayChieu, GioBatDau, GioKetThuc, GiaVeCoSo, GiaVeTreEm, VAT, NgonNguAmThanh) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             // Sử dụng MaPhim = 1 làm phim mặc định nếu chưa gán phim
@@ -206,7 +235,9 @@ public class ShowtimeDAO extends DBContext {
             ps.setTimestamp(5, showtime.getGioKetThuc() != null
                     ? java.sql.Timestamp.valueOf(showtime.getGioKetThuc()) : null);
             ps.setBigDecimal(6, showtime.getGiaVeCoSo());
-            ps.setString(7, showtime.getNgonNguAmThanh());
+            ps.setBigDecimal(7, showtime.getGiaVeTreEm());
+            ps.setBigDecimal(8, showtime.getVat());
+            ps.setString(9, showtime.getNgonNguAmThanh());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -220,7 +251,7 @@ public class ShowtimeDAO extends DBContext {
      */
     public boolean updateShowtime(Showtime showtime) {
         String sql = "UPDATE dbo.Showtime SET MaPhim = ?, MaPhong = ?, NgayChieu = ?, "
-                + "GioBatDau = ?, GioKetThuc = ?, GiaVeCoSo = ?, NgonNguAmThanh = ? "
+                + "GioBatDau = ?, GioKetThuc = ?, GiaVeCoSo = ?, GiaVeTreEm = ?, VAT = ?, NgonNguAmThanh = ? "
                 + "WHERE MaSuatChieu = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -233,8 +264,10 @@ public class ShowtimeDAO extends DBContext {
             ps.setTimestamp(5, showtime.getGioKetThuc() != null
                     ? java.sql.Timestamp.valueOf(showtime.getGioKetThuc()) : null);
             ps.setBigDecimal(6, showtime.getGiaVeCoSo());
-            ps.setString(7, showtime.getNgonNguAmThanh());
-            ps.setInt(8, showtime.getMaSuatChieu());
+            ps.setBigDecimal(7, showtime.getGiaVeTreEm());
+            ps.setBigDecimal(8, showtime.getVat());
+            ps.setString(9, showtime.getNgonNguAmThanh());
+            ps.setInt(10, showtime.getMaSuatChieu());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -263,7 +296,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesByRoomAndDate(int maPhong, LocalDate date) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.GiaVeTreEm, s.VAT, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -379,8 +416,8 @@ public class ShowtimeDAO extends DBContext {
      * Tạo suất chiếu hàng loạt cho nhiều ngày
      */
     public boolean bulkCreateShowtimes(List<Showtime> showtimes) {
-        String sql = "INSERT INTO dbo.Showtime (MaPhim, MaPhong, NgayChieu, GioBatDau, GioKetThuc, GiaVeCoSo, NgonNguAmThanh) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO dbo.Showtime (MaPhim, MaPhong, NgayChieu, GioBatDau, GioKetThuc, GiaVeCoSo, GiaVeTreEm, VAT, NgonNguAmThanh) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             for (Showtime showtime : showtimes) {
@@ -393,7 +430,9 @@ public class ShowtimeDAO extends DBContext {
                 ps.setTimestamp(5, showtime.getGioKetThuc() != null
                         ? java.sql.Timestamp.valueOf(showtime.getGioKetThuc()) : null);
                 ps.setBigDecimal(6, showtime.getGiaVeCoSo());
-                ps.setString(7, showtime.getNgonNguAmThanh());
+                ps.setBigDecimal(7, showtime.getGiaVeTreEm());
+                ps.setBigDecimal(8, showtime.getVat());
+                ps.setString(9, showtime.getNgonNguAmThanh());
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -409,7 +448,11 @@ public class ShowtimeDAO extends DBContext {
      */
     public List<Showtime> getShowtimesInDateRange(LocalDate startDate, LocalDate endDate) {
         List<Showtime> showtimes = new ArrayList<>();
-        String sql = "SELECT s.*, m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
+        String sql = "SELECT s.MaSuatChieu, s.MaPhim, s.MaPhong, s.GiaVeCoSo, s.GiaVeTreEm, s.VAT, s.NgonNguAmThanh, " +
+                     "CONVERT(VARCHAR(23), s.NgayChieu, 120) as NgayChieu, " +
+                     "CONVERT(VARCHAR(23), s.GioBatDau, 120) as GioBatDau, " +
+                     "CONVERT(VARCHAR(23), s.GioKetThuc, 120) as GioKetThuc, " +
+                     "m.TenPhim, rm.TenPhong, c.TenRap, m.Poster "
                 + "FROM dbo.Showtime s "
                 + "JOIN dbo.Movie m ON s.MaPhim = m.MaPhim "
                 + "JOIN dbo.Room rm ON s.MaPhong = rm.MaPhong "
@@ -441,43 +484,47 @@ public class ShowtimeDAO extends DBContext {
         showtime.setMaPhong(rs.getInt("MaPhong"));
 //        showtime.setPoster(rs.getString("Poster"));
 
-        // Đọc trực tiếp từ database để tránh timezone issues
+        // Đọc datetime từ string đã được CONVERT trong SQL, tránh timezone conversion
         try {
-            // Đọc raw string từ database
+            // Đọc string từ database (đã được CONVERT trong SQL)
             String rawNgayChieu = rs.getString("NgayChieu");
             String rawGioBatDau = rs.getString("GioBatDau");
             String rawGioKetThuc = rs.getString("GioKetThuc");
-            if (rawNgayChieu != null && !rawNgayChieu.isEmpty()) {
-                // Loại bỏ phần microseconds
-                String cleanDate = rawNgayChieu.replaceAll("\\.\\d+", "");
-                // Parse thành LocalDateTime và cộng thêm 2 ngày để sửa lỗi timezone
-                java.time.LocalDateTime parsedDate = java.time.LocalDateTime.parse(cleanDate.replace(" ", "T"));
-                showtime.setNgayChieu(parsedDate.plusDays(2));
+            
+            System.out.println("[ShowtimeDAO.mapRowToShowtime] NgayChieu từ database (string): " + rawNgayChieu);
+            System.out.println("[ShowtimeDAO.mapRowToShowtime] GioBatDau từ database (string): " + rawGioBatDau);
+            System.out.println("[ShowtimeDAO.mapRowToShowtime] GioKetThuc từ database (string): " + rawGioKetThuc);
+            
+            if (rawNgayChieu != null && !rawNgayChieu.trim().isEmpty()) {
+                // Parse trực tiếp từ string (format: yyyy-MM-dd HH:mm:ss)
+                String parseString = rawNgayChieu.trim().replace(" ", "T");
+                System.out.println("[ShowtimeDAO.mapRowToShowtime] NgayChieu sau khi replace: " + parseString);
+                
+                java.time.LocalDateTime parsedDate = java.time.LocalDateTime.parse(parseString);
+                System.out.println("[ShowtimeDAO.mapRowToShowtime] NgayChieu sau khi parse thành LocalDateTime: " + parsedDate);
+                
+                showtime.setNgayChieu(parsedDate);
             }
 
-            // Xử lý GioBatDau và GioKetThuc - lấy ngày từ NgayChieu và giờ từ GioBatDau/GioKetThuc
-            if (rawGioBatDau != null && !rawGioBatDau.isEmpty() && rawNgayChieu != null && !rawNgayChieu.isEmpty()) {
-                String cleanDate = rawNgayChieu.replaceAll("\\.\\d+", "");
-                String cleanTime = rawGioBatDau.replaceAll("\\.\\d+", "");
-
-                // Lấy ngày từ NgayChieu và giờ từ GioBatDau, cộng thêm 2 ngày
-                java.time.LocalDate date = java.time.LocalDate.parse(cleanDate.split(" ")[0]).plusDays(2);
-                java.time.LocalTime time = java.time.LocalTime.parse(cleanTime.split(" ")[1]);
-
-                showtime.setGioBatDau(java.time.LocalDateTime.of(date, time));
-                System.out.println("DEBUG - Parsed GioBatDau: " + showtime.getGioBatDau());
+            // Xử lý GioBatDau và GioKetThuc
+            if (rawGioBatDau != null && !rawGioBatDau.trim().isEmpty()) {
+                String parseString = rawGioBatDau.trim().replace(" ", "T");
+                System.out.println("[ShowtimeDAO.mapRowToShowtime] GioBatDau sau khi replace: " + parseString);
+                
+                java.time.LocalDateTime parsed = java.time.LocalDateTime.parse(parseString);
+                System.out.println("[ShowtimeDAO.mapRowToShowtime] GioBatDau sau khi parse thành LocalDateTime: " + parsed);
+                
+                showtime.setGioBatDau(parsed);
             }
 
-            if (rawGioKetThuc != null && !rawGioKetThuc.isEmpty() && rawNgayChieu != null && !rawNgayChieu.isEmpty()) {
-                String cleanDate = rawNgayChieu.replaceAll("\\.\\d+", "");
-                String cleanTime = rawGioKetThuc.replaceAll("\\.\\d+", "");
-
-                // Lấy ngày từ NgayChieu và giờ từ GioKetThuc, cộng thêm 2 ngày
-                java.time.LocalDate date = java.time.LocalDate.parse(cleanDate.split(" ")[0]).plusDays(2);
-                java.time.LocalTime time = java.time.LocalTime.parse(cleanTime.split(" ")[1]);
-
-                showtime.setGioKetThuc(java.time.LocalDateTime.of(date, time));
-                System.out.println("DEBUG - Parsed GioKetThuc: " + showtime.getGioKetThuc());
+            if (rawGioKetThuc != null && !rawGioKetThuc.trim().isEmpty()) {
+                String parseString = rawGioKetThuc.trim().replace(" ", "T");
+                System.out.println("[ShowtimeDAO.mapRowToShowtime] GioKetThuc sau khi replace: " + parseString);
+                
+                java.time.LocalDateTime parsed = java.time.LocalDateTime.parse(parseString);
+                System.out.println("[ShowtimeDAO.mapRowToShowtime] GioKetThuc sau khi parse thành LocalDateTime: " + parsed);
+                
+                showtime.setGioKetThuc(parsed);
             }
         } catch (Exception e) {
             System.err.println("Error reading timestamp: " + e.getMessage());
@@ -503,6 +550,8 @@ public class ShowtimeDAO extends DBContext {
         }
 
         showtime.setGiaVeCoSo(rs.getBigDecimal("GiaVeCoSo"));
+        try { showtime.setGiaVeTreEm(rs.getBigDecimal("GiaVeTreEm")); } catch (SQLException ignored) {}
+        try { showtime.setVat(rs.getBigDecimal("VAT")); } catch (SQLException ignored) {}
         showtime.setNgonNguAmThanh(rs.getString("NgonNguAmThanh"));
 
         // Display fields from join
@@ -520,43 +569,47 @@ public class ShowtimeDAO extends DBContext {
         showtime.setMaPhong(rs.getInt("MaPhong"));
         showtime.setPoster(rs.getString("Poster"));
 
-        // Đọc trực tiếp từ database để tránh timezone issues
+        // Đọc datetime từ string đã được CONVERT trong SQL, tránh timezone conversion
         try {
-            // Đọc raw string từ database
+            // Đọc string từ database (đã được CONVERT trong SQL)
             String rawNgayChieu = rs.getString("NgayChieu");
             String rawGioBatDau = rs.getString("GioBatDau");
             String rawGioKetThuc = rs.getString("GioKetThuc");
-            if (rawNgayChieu != null && !rawNgayChieu.isEmpty()) {
-                // Loại bỏ phần microseconds
-                String cleanDate = rawNgayChieu.replaceAll("\\.\\d+", "");
-                // Parse thành LocalDateTime và cộng thêm 2 ngày để sửa lỗi timezone
-                java.time.LocalDateTime parsedDate = java.time.LocalDateTime.parse(cleanDate.replace(" ", "T"));
-                showtime.setNgayChieu(parsedDate.plusDays(2));
+            
+            System.out.println("[ShowtimeDAO.mapRowToShowtime2] NgayChieu từ database (string): " + rawNgayChieu);
+            System.out.println("[ShowtimeDAO.mapRowToShowtime2] GioBatDau từ database (string): " + rawGioBatDau);
+            System.out.println("[ShowtimeDAO.mapRowToShowtime2] GioKetThuc từ database (string): " + rawGioKetThuc);
+            
+            if (rawNgayChieu != null && !rawNgayChieu.trim().isEmpty()) {
+                // Parse trực tiếp từ string (format: yyyy-MM-dd HH:mm:ss)
+                String parseString = rawNgayChieu.trim().replace(" ", "T");
+                System.out.println("[ShowtimeDAO.mapRowToShowtime2] NgayChieu sau khi replace: " + parseString);
+                
+                java.time.LocalDateTime parsedDate = java.time.LocalDateTime.parse(parseString);
+                System.out.println("[ShowtimeDAO.mapRowToShowtime2] NgayChieu sau khi parse thành LocalDateTime: " + parsedDate);
+                
+                showtime.setNgayChieu(parsedDate);
             }
 
-            // Xử lý GioBatDau và GioKetThuc - lấy ngày từ NgayChieu và giờ từ GioBatDau/GioKetThuc
-            if (rawGioBatDau != null && !rawGioBatDau.isEmpty() && rawNgayChieu != null && !rawNgayChieu.isEmpty()) {
-                String cleanDate = rawNgayChieu.replaceAll("\\.\\d+", "");
-                String cleanTime = rawGioBatDau.replaceAll("\\.\\d+", "");
-
-                // Lấy ngày từ NgayChieu và giờ từ GioBatDau, cộng thêm 2 ngày
-                java.time.LocalDate date = java.time.LocalDate.parse(cleanDate.split(" ")[0]).plusDays(2);
-                java.time.LocalTime time = java.time.LocalTime.parse(cleanTime.split(" ")[1]);
-
-                showtime.setGioBatDau(java.time.LocalDateTime.of(date, time));
-                System.out.println("DEBUG - Parsed GioBatDau: " + showtime.getGioBatDau());
+            // Xử lý GioBatDau và GioKetThuc
+            if (rawGioBatDau != null && !rawGioBatDau.trim().isEmpty()) {
+                String parseString = rawGioBatDau.trim().replace(" ", "T");
+                System.out.println("[ShowtimeDAO.mapRowToShowtime2] GioBatDau sau khi replace: " + parseString);
+                
+                java.time.LocalDateTime parsed = java.time.LocalDateTime.parse(parseString);
+                System.out.println("[ShowtimeDAO.mapRowToShowtime2] GioBatDau sau khi parse thành LocalDateTime: " + parsed);
+                
+                showtime.setGioBatDau(parsed);
             }
 
-            if (rawGioKetThuc != null && !rawGioKetThuc.isEmpty() && rawNgayChieu != null && !rawNgayChieu.isEmpty()) {
-                String cleanDate = rawNgayChieu.replaceAll("\\.\\d+", "");
-                String cleanTime = rawGioKetThuc.replaceAll("\\.\\d+", "");
-
-                // Lấy ngày từ NgayChieu và giờ từ GioKetThuc, cộng thêm 2 ngày
-                java.time.LocalDate date = java.time.LocalDate.parse(cleanDate.split(" ")[0]).plusDays(2);
-                java.time.LocalTime time = java.time.LocalTime.parse(cleanTime.split(" ")[1]);
-
-                showtime.setGioKetThuc(java.time.LocalDateTime.of(date, time));
-                System.out.println("DEBUG - Parsed GioKetThuc: " + showtime.getGioKetThuc());
+            if (rawGioKetThuc != null && !rawGioKetThuc.trim().isEmpty()) {
+                String parseString = rawGioKetThuc.trim().replace(" ", "T");
+                System.out.println("[ShowtimeDAO.mapRowToShowtime2] GioKetThuc sau khi replace: " + parseString);
+                
+                java.time.LocalDateTime parsed = java.time.LocalDateTime.parse(parseString);
+                System.out.println("[ShowtimeDAO.mapRowToShowtime2] GioKetThuc sau khi parse thành LocalDateTime: " + parsed);
+                
+                showtime.setGioKetThuc(parsed);
             }
         } catch (Exception e) {
             System.err.println("Error reading timestamp: " + e.getMessage());
@@ -582,6 +635,8 @@ public class ShowtimeDAO extends DBContext {
         }
 
         showtime.setGiaVeCoSo(rs.getBigDecimal("GiaVeCoSo"));
+        try { showtime.setGiaVeTreEm(rs.getBigDecimal("GiaVeTreEm")); } catch (SQLException ignored) {}
+        try { showtime.setVat(rs.getBigDecimal("VAT")); } catch (SQLException ignored) {}
         showtime.setNgonNguAmThanh(rs.getString("NgonNguAmThanh"));
 
         // Display fields from join

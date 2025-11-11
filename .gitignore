@@ -27,3 +27,4 @@ replay_pid*
 !lib/**
 !MovieTicketBookingSystem/lib/
 !MovieTicketBookingSystem/lib/**
+/MovieTicketBookingSystem/dist/

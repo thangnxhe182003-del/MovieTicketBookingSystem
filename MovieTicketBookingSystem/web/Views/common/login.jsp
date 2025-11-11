@@ -203,6 +203,7 @@
     </div>
 
     <form class="form-content" id="loginForm" action="login" method="post">
+        <input type="hidden" name="next" value="${param.next}"/>
         <div class="form-group">
             <label for="username">Tên đăng nhập / Email / SĐT</label>
             <input type="text" id="username" name="username"

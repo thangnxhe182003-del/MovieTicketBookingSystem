@@ -6,6 +6,26 @@
         <servlet-name>LogoutController</servlet-name>
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
+    <!-- Admin Genre Management -->
+    <servlet>
+        <servlet-name>AdminGenreServlet</servlet-name>
+        <servlet-class>controller.AdminGenreServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminGenreServlet</servlet-name>
+        <url-pattern>/admin-genres</url-pattern>
+    </servlet-mapping>
+    <!-- Admin Director Management -->
+    <servlet>
+        <servlet-name>AdminDirectorServlet</servlet-name>
+        <servlet-class>controller.AdminDirectorServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminDirectorServlet</servlet-name>
+        <url-pattern>/admin-directors</url-pattern>
+    </servlet-mapping>
     <welcome-file-list>
         <welcome-file>home</welcome-file>
     </welcome-file-list>
@@ -18,6 +38,7 @@
     <servlet>
         <servlet-name>LogoutController</servlet-name>
         <servlet-class>controller.LogoutController</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>HomePageController</servlet-name>
@@ -172,6 +193,26 @@
         <servlet-name>AdminProductServlet</servlet-name>
         <url-pattern>/admin-products</url-pattern>
     </servlet-mapping>
+    <!-- Admin Discount Management -->
+    <servlet>
+        <servlet-name>AdminDiscountServlet</servlet-name>
+        <servlet-class>controller.AdminDiscountServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminDiscountServlet</servlet-name>
+        <url-pattern>/admin-discounts</url-pattern>
+    </servlet-mapping>
+    <!-- Admin Ticket Management -->
+    <servlet>
+        <servlet-name>AdminTicketServlet</servlet-name>
+        <servlet-class>controller.AdminTicketServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminTicketServlet</servlet-name>
+        <url-pattern>/admin-tickets</url-pattern>
+    </servlet-mapping>
     <!-- Admin Movie Management -->
     <servlet>
         <servlet-name>AdminMovieServlet</servlet-name>
@@ -181,6 +222,15 @@
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin-dashboard</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ProductController</servlet-name>
+        <servlet-class>controller.ProductController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductController</servlet-name>
+        <url-pattern>/products</url-pattern>
     </servlet-mapping>
     <servlet>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -246,5 +296,15 @@
     <servlet-mapping>
         <servlet-name>BookingController</servlet-name>
         <url-pattern>/booking</url-pattern>
+    </servlet-mapping>
+    <!-- Admin Slider Management -->
+    <servlet>
+        <servlet-name>AdminSliderServlet</servlet-name>
+        <servlet-class>controller.AdminSliderServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminSliderServlet</servlet-name>
+        <url-pattern>/admin-sliders</url-pattern>
     </servlet-mapping>
 </web-app>

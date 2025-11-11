@@ -12,15 +12,98 @@
             .slider {
                 position: relative;
                 width: 100%;
-                height: 380px;
+                max-width: 1200px;
+                margin: 0 auto;
+                background: #f5f5f5;
                 overflow: hidden;
             }
-            .slides { display: flex; transition: transform .4s ease; }
-            .slide { min-width: 100%; height: 380px; }
-            .slide img { width: 100%; height: 380px; object-fit: cover; }
-            .slider-nav { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
-            .dot { height: 10px; width: 10px; background-color: #ccc; border-radius: 50%; cursor: pointer; }
-            .dot.active { background-color: #333; }
+            .slides { 
+                display: flex; 
+                transition: transform .4s ease; 
+            }
+            .slide { 
+                min-width: 100%; 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f5f5f5;
+            }
+            .slide img { 
+                width: 100%;
+                height: auto;
+                max-height: 500px;
+                object-fit: contain;
+                display: block;
+            }
+            .slider-nav { 
+                position: absolute; 
+                bottom: 15px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                display: flex; 
+                gap: 10px; 
+                z-index: 10;
+            }
+            .dot { 
+                height: 10px; 
+                width: 10px; 
+                background-color: rgba(255, 255, 255, 0.5); 
+                border-radius: 50%; 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+            }
+            .dot:hover {
+                background-color: rgba(255, 255, 255, 0.8);
+                transform: scale(1.2);
+            }
+            .dot.active { 
+                background-color: #e50914; 
+                width: 30px;
+                border-radius: 5px;
+            }
+            
+            /* Slider Navigation Arrows */
+            .slider-nav-arrow {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(0, 0, 0, 0.5);
+                color: white;
+                border: none;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                z-index: 10;
+                transition: all 0.3s ease;
+            }
+            
+            .slider-nav-arrow:hover {
+                background: rgba(0, 0, 0, 0.8);
+                transform: translateY(-50%) scale(1.1);
+            }
+            
+            .slider-nav-arrow.prev {
+                left: 20px;
+            }
+            
+            .slider-nav-arrow.next {
+                right: 20px;
+            }
+            
+            .slider-nav-arrow:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+            
+            .slider-nav-arrow:disabled:hover {
+                transform: translateY(-50%);
+                background: rgba(0, 0, 0, 0.5);
+            }
 
             /* ==== MOVIE SECTIONS ==== */
             .home-body { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
@@ -33,7 +116,30 @@
             .movie-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.08); transition: transform .2s ease, box-shadow .2s ease; display: flex; flex-direction: column; height: 100%; }
             .movie-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
             .movie-thumb { width: 100%; aspect-ratio: 2 / 3; background: #f1f1f1; }
-            .movie-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+            .movie-thumb img { 
+                width: 100%; 
+                height: 100%; 
+                object-fit: cover; 
+                display: block; 
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+            
+            .movie-thumb img.loaded {
+                opacity: 1;
+            }
+            
+            .movie-thumb img.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 12px;
+                text-align: center;
+            }
             .movie-meta { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
             .movie-title { font-size: 15px; font-weight: 700; color: #222; line-height: 1.3; min-height: 40px; }
             .movie-subinfo { 
@@ -86,19 +192,48 @@
         <jsp:include page="../layout/header.jsp" />
 
         <div class="slider">
-            <div class="slides">
-                <div class="slide"><img src="https://media.lottecinemavn.com/Media/WebAdmin/7ce48d93c8074902b0b5a6ba82e85351.jpg" alt="Banner 1"></div>
-                <div class="slide"><img src="https://via.placeholder.com/1200x380?text=Slide+2" alt="Banner 2"></div>
-                <div class="slide"><img src="https://via.placeholder.com/1200x380?text=Slide+3" alt="Banner 3"></div>
-            </div>
-            <div class="slider-nav">
-                <span class="dot active"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
+            <c:choose>
+                <c:when test="${empty sliders}">
+                    <!-- Default slider nếu không có slider nào -->
+                    <div class="slides">
+                        <div class="slide"><img src="https://via.placeholder.com/1200x380?text=No+Slider" alt="Default Banner"></div>
+                    </div>
+                    <div class="slider-nav">
+                        <span class="dot active"></span>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <button class="slider-nav-arrow prev" id="sliderPrev" aria-label="Previous slide">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="slider-nav-arrow next" id="sliderNext" aria-label="Next slide">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="slides" id="sliderSlides">
+                        <c:forEach var="slider" items="${sliders}">
+                            <div class="slide">
+                                <img src="${pageContext.request.contextPath}/assets/image/${slider.anhSlide}" 
+                                     alt="${slider.tieuDe}"
+                                     data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSIzODAiIHZpZXdCb3g9IjAgMCAxMjAwIDM4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iMzgwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik02MDAgMTkwQzYwMCAxNzAuNzkxIDYxNS43OTEgMTU1IDYzNSAxNTVINjY1QzY4NC4yMDkgMTU1IDcwMCAxNzAuNzkxIDcwMCAxOTBWMjkwQzcwMCAzMDkuMjA5IDY4NC4yMDkgMzI1IDY2NSAzMjVINjM1QzYxNS43OTEgMzI1IDYwMCAzMDkuMjA5IDYwMCAyOTBWMTkwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjU4NSIgeT0iMTkwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
+                            </div>
+                        </c:forEach>
+                    </div>
+                    <div class="slider-nav" id="sliderNav">
+                        <c:forEach var="slider" items="${sliders}" varStatus="status">
+                            <span class="dot ${status.index == 0 ? 'active' : ''}" data-index="${status.index}"></span>
+                        </c:forEach>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
 
-        <div class="home-body">
+            <div class="home-body">
+                <c:if test="${not empty searchQuery}">
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #e50914;">
+                        <h2 style="margin: 0 0 8px 0; color: #333;">Kết quả tìm kiếm cho: "${searchQuery}"</h2>
+                        <p style="margin: 0; color: #666;">Tìm thấy ${movies.size()} phim</p>
+                    </div>
+                </c:if>
             <div class="tabs">
                 <button class="tab-btn active" data-tab="now">Đang chiếu</button>
                 <button class="tab-btn" data-tab="upcoming">Sắp chiếu</button>
@@ -116,13 +251,24 @@
                                     <c:url var="movieDetailUrl" value="movie?action=detail&maPhim=${movie.maPhim}"/>
                                     <c:url var="moviePosterUrl" value="/assets/image/${movie.poster}"/>
                                     <a class="movie-thumb" href="${movieDetailUrl}">
-                                        <img src="${moviePosterUrl}" alt="<c:out value="${movie.tenPhim}"/>" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                                        <img src="${moviePosterUrl}" 
+                                             alt="<c:out value="${movie.tenPhim}"/>" 
+                                             data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDMwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xNTAgODBDMTUwIDY1LjM2MTcgMTYzLjM2MiA1MiAxNzggNTJIMTIyQzEzNi42MzggNTIgMTUwIDY1LjM2MTcgMTUwIDgwVjM3MEMxNTAgMzg0LjYzOCAxMzYuNjM4IDM5OCAxMjIgMzk4SDE3OEMxNjMuMzYyIDM5OCAxNTAgMzg0LjYzOCAxNTAgMzcwVjgwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjEzNSIgeT0iMjAwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                                     </a>
                                     <div class="movie-meta">
                                         <div class="movie-title"><c:out value="${movie.tenPhim}"/></div>
                                         <div class="movie-subinfo">
                                             <span class="age-rating" data-age="${movie.doTuoiGioiHan}">${movie.doTuoiGioiHan}+</span>
-                                            <span class="badge"><c:out value="${movie.theLoai}"/></span>
+                                            <span>
+                                                <c:forEach var="g" items="${movieIdToGenres[movie.maPhim]}">
+                                                    <a href="home?genreId=${g.maTheLoai}" class="badge" style="text-decoration:none; margin-right:4px;">${g.tenTheLoai}</a>
+                                                </c:forEach>
+                                            </span>
+                                            <span>
+                                                <c:forEach var="d" items="${movieIdToDirectors[movie.maPhim]}">
+                                                    <a href="home?directorId=${d.maDaoDien}" class="badge" style="text-decoration:none; background:#fff3cd; color:#856404; margin-right:4px;">${d.tenDaoDien}</a>
+                                                </c:forEach>
+                                            </span>
                                             <span><c:out value="${movie.thoiLuong}"/> phút</span>
                                         </div>
                                         <c:if test="${not empty avgRatingsMap[movie.maPhim]}">
@@ -151,13 +297,24 @@
                                     <c:url var="movieDetailUrl" value="movie?action=detail&maPhim=${movie.maPhim}"/>
                                     <c:url var="moviePosterUrl" value="/assets/image/${movie.poster}"/>
                                     <a class="movie-thumb" href="${movieDetailUrl}">
-                                        <img src="${moviePosterUrl}" alt="<c:out value="${movie.tenPhim}"/>" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                                        <img src="${moviePosterUrl}" 
+                                             alt="<c:out value="${movie.tenPhim}"/>" 
+                                             data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDMwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xNTAgODBDMTUwIDY1LjM2MTcgMTYzLjM2MiA1MiAxNzggNTJIMTIyQzEzNi42MzggNTIgMTUwIDY1LjM2MTcgMTUwIDgwVjM3MEMxNTAgMzg0LjYzOCAxMzYuNjM4IDM5OCAxMjIgMzk4SDE3OEMxNjMuMzYyIDM5OCAxNTAgMzg0LjYzOCAxNTAgMzcwVjgwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjEzNSIgeT0iMjAwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                                     </a>
                                     <div class="movie-meta">
                                         <div class="movie-title"><c:out value="${movie.tenPhim}"/></div>
                                         <div class="movie-subinfo">
                                             <span class="age-rating" data-age="${movie.doTuoiGioiHan}">${movie.doTuoiGioiHan}+</span>
-                                            <span class="badge"><c:out value="${movie.theLoai}"/></span>
+                                            <span>
+                                                <c:forEach var="g" items="${movieIdToGenres[movie.maPhim]}">
+                                                    <a href="home?genreId=${g.maTheLoai}" class="badge" style="text-decoration:none; margin-right:4px;">${g.tenTheLoai}</a>
+                                                </c:forEach>
+                                            </span>
+                                            <span>
+                                                <c:forEach var="d" items="${movieIdToDirectors[movie.maPhim]}">
+                                                    <a href="home?directorId=${d.maDaoDien}" class="badge" style="text-decoration:none; background:#fff3cd; color:#856404; margin-right:4px;">${d.tenDaoDien}</a>
+                                                </c:forEach>
+                                            </span>
                                             <c:if test="${movie.ngayKhoiChieu != null}">
                                                 <span style="color:#e67e22;">
                                                     <c:out value="${dateLabelMap[movie.maPhim]}"/>
@@ -196,8 +353,34 @@
         <jsp:include page="../layout/footer.jsp" />
 
         <script>
+            // Image loading handler
+            function handleImageLoad(img) {
+                img.classList.add('loaded');
+            }
+            
+            function handleImageError(img) {
+                img.classList.add('error');
+                if (img.dataset.fallback) {
+                    img.src = img.dataset.fallback;
+                }
+            }
+            
             // Tabs switching
             document.addEventListener('DOMContentLoaded', function() {
+                // Handle image loading
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.complete) {
+                        if (img.naturalHeight !== 0) {
+                            handleImageLoad(img);
+                        } else {
+                            handleImageError(img);
+                        }
+                    } else {
+                        img.addEventListener('load', () => handleImageLoad(img));
+                        img.addEventListener('error', () => handleImageError(img));
+                    }
+                });
+                
                 const tabs = document.querySelectorAll('.tab-btn');
                 const nowTab = document.getElementById('tab-now');
                 const upTab = document.getElementById('tab-upcoming');
@@ -214,14 +397,95 @@
                 // Simple slider
                 const slides = document.querySelector('.slides');
                 const dots = document.querySelectorAll('.dot');
-                let current = 0;
-                function setSlide(i) {
-                    slides.style.transform = 'translateX(' + (-i * 100) + '%)';
-                    dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
-                    current = i;
+                const prevBtn = document.getElementById('sliderPrev');
+                const nextBtn = document.getElementById('sliderNext');
+                
+                if (slides && dots.length > 0) {
+                    let current = 0;
+                    const totalSlides = dots.length;
+                    
+                    function setSlide(i) {
+                        if (slides && dots.length > 0) {
+                            slides.style.transform = 'translateX(' + (-i * 100) + '%)';
+                            dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+                            current = i;
+                        }
+                    }
+                    
+                    // Dot navigation
+                    dots.forEach((d, idx) => d.addEventListener('click', () => setSlide(idx)));
+                    
+                    // Previous button - loop to last slide
+                    if (prevBtn) {
+                        prevBtn.addEventListener('click', () => {
+                            if (current > 0) {
+                                setSlide(current - 1);
+                            } else {
+                                setSlide(totalSlides - 1); // Loop to last
+                            }
+                        });
+                    }
+                    
+                    // Next button - loop to first slide
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            if (current < totalSlides - 1) {
+                                setSlide(current + 1);
+                            } else {
+                                setSlide(0); // Loop to first
+                            }
+                        });
+                    }
+                    
+                    // Auto-play
+                    let autoPlayInterval;
+                    if (dots.length > 1) {
+                        autoPlayInterval = setInterval(() => {
+                            setSlide((current + 1) % dots.length);
+                        }, 5000);
+                        
+                        // Pause on hover
+                        const slider = document.querySelector('.slider');
+                        if (slider) {
+                            slider.addEventListener('mouseenter', () => {
+                                if (autoPlayInterval) {
+                                    clearInterval(autoPlayInterval);
+                                }
+                            });
+                            slider.addEventListener('mouseleave', () => {
+                                if (dots.length > 1) {
+                                    autoPlayInterval = setInterval(() => {
+                                        setSlide((current + 1) % dots.length);
+                                    }, 5000);
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Initialize
+                    setSlide(0);
                 }
-                dots.forEach((d, idx) => d.addEventListener('click', () => setSlide(idx)));
-                setInterval(() => setSlide((current + 1) % dots.length), 5000);
+                
+                // Image loading for slider
+                const sliderImages = document.querySelectorAll('.slider .slide img');
+                sliderImages.forEach(img => {
+                    img.onload = function() {
+                        this.classList.add('loaded');
+                    };
+                    img.onerror = function() {
+                        this.classList.add('error');
+                        if (this.getAttribute('data-fallback')) {
+                            this.src = this.getAttribute('data-fallback');
+                        }
+                    };
+                    if (img.complete) {
+                        if (img.naturalHeight !== 0) {
+                            img.onload();
+                        } else {
+                            img.onerror();
+                        }
+                    }
+                });
             });
         </script>
     </body>

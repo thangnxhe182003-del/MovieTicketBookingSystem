@@ -14,7 +14,10 @@ public class MovieDAO extends DBContext {
      */
     public List<Movie> getAllMovies() {
         List<Movie> movies = new ArrayList<>();
-        String sql = "SELECT * FROM dbo.Movie ORDER BY NgayKhoiChieu DESC";
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie ORDER BY NgayKhoiChieu DESC";
         
         try (Statement st = connection.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -31,7 +34,10 @@ public class MovieDAO extends DBContext {
      * Lấy phim theo ID
      */
     public Movie getMovieById(int maPhim) {
-        String sql = "SELECT * FROM dbo.Movie WHERE MaPhim = ?";
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie WHERE MaPhim = ?";
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, maPhim);
@@ -47,11 +53,15 @@ public class MovieDAO extends DBContext {
     }
 
     /**
-     * Lấy phim đang chiếu (sắp tới hoặc đang chiếu)
+     * Lấy phim đang chiếu (sắp tới hoặc đang chiếu) - Dựa trên ngày khởi chiếu
+     * Dùng cho logic cũ, không dùng cho home page
      */
     public List<Movie> getUpcomingMovies() {
         List<Movie> movies = new ArrayList<>();
-        String sql = "SELECT * FROM dbo.Movie WHERE NgayKhoiChieu IS NOT NULL " +
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie WHERE NgayKhoiChieu IS NOT NULL " +
                     "AND NgayKhoiChieu >= CAST(GETDATE() AS DATE) " +
                     "ORDER BY NgayKhoiChieu ASC";
         
@@ -65,13 +75,66 @@ public class MovieDAO extends DBContext {
         }
         return movies;
     }
+    
+    /**
+     * Lấy phim đang chiếu (dựa trên TrangThai = 'Đang chiếu')
+     * Dùng cho home page
+     */
+    public List<Movie> getNowShowingMovies() {
+        List<Movie> movies = new ArrayList<>();
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie WHERE TrangThai = ? " +
+                    "ORDER BY NgayKhoiChieu DESC";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, "Đang chiếu");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    movies.add(mapRowToMovie(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return movies;
+    }
+    
+    /**
+     * Lấy phim sắp chiếu (dựa trên TrangThai = 'Sắp chiếu')
+     * Dùng cho home page
+     */
+    public List<Movie> getComingSoonMovies() {
+        List<Movie> movies = new ArrayList<>();
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie WHERE TrangThai = ? " +
+                    "ORDER BY NgayKhoiChieu ASC";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, "Sắp chiếu");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    movies.add(mapRowToMovie(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return movies;
+    }
 
     /**
      * Tìm kiếm phim theo tên
      */
     public List<Movie> searchMovies(String keyword) {
         List<Movie> movies = new ArrayList<>();
-        String sql = "SELECT * FROM dbo.Movie WHERE TenPhim LIKE ? ORDER BY NgayKhoiChieu DESC";
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie WHERE TenPhim LIKE ? ORDER BY NgayKhoiChieu DESC";
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
@@ -87,14 +150,64 @@ public class MovieDAO extends DBContext {
     }
 
     /**
+     * Lấy phim theo MaTheLoai qua bảng liên kết
+     */
+    public List<Movie> getMoviesByGenreId(int genreId) {
+        List<Movie> movies = new ArrayList<>();
+        String sql = "SELECT m.MaPhim, m.TenPhim, m.LoaiPhim, m.DienVien, m.DoTuoiGioiHan, m.ThoiLuong, m.NoiDung, " +
+                "CONVERT(VARCHAR(23), m.NgayKhoiChieu, 120) as NgayKhoiChieu, m.Poster, m.NgonNguPhuDe, m.TrangThai, " +
+                "CONVERT(VARCHAR(23), m.NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), m.NgayCapNhat, 120) as NgayCapNhat " +
+                "FROM dbo.Movie m JOIN dbo.MovieGenre mg ON m.MaPhim = mg.MaPhim " +
+                "WHERE mg.MaTheLoai = ? " +
+                "ORDER BY m.NgayKhoiChieu DESC";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, genreId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    movies.add(mapRowToMovie(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return movies;
+    }
+
+    /**
+     * Lấy phim theo MaDaoDien qua bảng liên kết
+     */
+    public List<Movie> getMoviesByDirectorId(int directorId) {
+        List<Movie> movies = new ArrayList<>();
+        String sql = "SELECT m.MaPhim, m.TenPhim, m.LoaiPhim, m.DienVien, m.DoTuoiGioiHan, m.ThoiLuong, m.NoiDung, " +
+                "CONVERT(VARCHAR(23), m.NgayKhoiChieu, 120) as NgayKhoiChieu, m.Poster, m.NgonNguPhuDe, m.TrangThai, " +
+                "CONVERT(VARCHAR(23), m.NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), m.NgayCapNhat, 120) as NgayCapNhat " +
+                "FROM dbo.Movie m JOIN dbo.MovieDirector md ON m.MaPhim = md.MaPhim " +
+                "WHERE md.MaDaoDien = ? " +
+                "ORDER BY m.NgayKhoiChieu DESC";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, directorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    movies.add(mapRowToMovie(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return movies;
+    }
+    /**
      * Lấy phim theo thể loại
      */
     public List<Movie> getMoviesByCategory(String theLoai) {
         List<Movie> movies = new ArrayList<>();
-        String sql = "SELECT * FROM dbo.Movie WHERE TheLoai = ? ORDER BY NgayKhoiChieu DESC";
+        String sql = "SELECT MaPhim, TenPhim, LoaiPhim, DienVien, DoTuoiGioiHan, ThoiLuong, NoiDung, " +
+                    "CONVERT(VARCHAR(23), NgayKhoiChieu, 120) as NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai, " +
+                    "CONVERT(VARCHAR(23), NgayTao, 120) as NgayTao, CONVERT(VARCHAR(23), NgayCapNhat, 120) as NgayCapNhat " +
+                    "FROM dbo.Movie WHERE 1=0 ORDER BY NgayKhoiChieu DESC";
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, theLoai);
+            // TheLoai đã tách sang bảng Genre - phương thức cũ không còn dùng
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     movies.add(mapRowToMovie(rs));
@@ -110,26 +223,33 @@ public class MovieDAO extends DBContext {
      * Thêm phim mới
      */
     public boolean addMovie(Movie movie) {
-        String sql = "INSERT INTO dbo.Movie (TenPhim, TheLoai, LoaiPhim, DaoDien, DienVien, " +
+        String sql = "INSERT INTO dbo.Movie (TenPhim, LoaiPhim, DienVien, " +
                     "DoTuoiGioiHan, ThoiLuong, NoiDung, NgayKhoiChieu, Poster, NgonNguPhuDe, TrangThai) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, movie.getTenPhim());
-            ps.setString(2, movie.getTheLoai());
-            ps.setString(3, movie.getLoaiPhim());
-            ps.setString(4, movie.getDaoDien());
-            ps.setString(5, movie.getDienVien());
-            ps.setInt(6, movie.getDoTuoiGioiHan());
-            ps.setInt(7, movie.getThoiLuong());
-            ps.setString(8, movie.getNoiDung());
-            ps.setTimestamp(9, movie.getNgayKhoiChieu() != null ? 
+            ps.setString(2, movie.getLoaiPhim());
+            ps.setString(3, movie.getDienVien());
+            ps.setInt(4, movie.getDoTuoiGioiHan());
+            ps.setInt(5, movie.getThoiLuong());
+            ps.setString(6, movie.getNoiDung());
+            ps.setTimestamp(7, movie.getNgayKhoiChieu() != null ? 
                 java.sql.Timestamp.valueOf(movie.getNgayKhoiChieu()) : null);
-            ps.setString(10, movie.getPoster());
-            ps.setString(11, movie.getNgonNguPhuDe());
-            ps.setString(12, movie.getTrangThai() != null ? movie.getTrangThai() : "Sắp chiếu");
+            ps.setString(8, movie.getPoster());
+            ps.setString(9, movie.getNgonNguPhuDe());
+            ps.setString(10, movie.getTrangThai() != null ? movie.getTrangThai() : "Sắp chiếu");
             
-            return ps.executeUpdate() > 0;
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                // Lấy MaPhim được tạo tự động
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        movie.setMaPhim(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -140,26 +260,24 @@ public class MovieDAO extends DBContext {
      * Cập nhật phim
      */
     public boolean updateMovie(Movie movie) {
-        String sql = "UPDATE dbo.Movie SET TenPhim = ?, TheLoai = ?, LoaiPhim = ?, " +
-                    "DaoDien = ?, DienVien = ?, DoTuoiGioiHan = ?, ThoiLuong = ?, " +
+        String sql = "UPDATE dbo.Movie SET TenPhim = ?, LoaiPhim = ?, " +
+                    "DienVien = ?, DoTuoiGioiHan = ?, ThoiLuong = ?, " +
                     "NoiDung = ?, NgayKhoiChieu = ?, Poster = ?, NgonNguPhuDe = ?, TrangThai = ? " +
                     "WHERE MaPhim = ?";
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, movie.getTenPhim());
-            ps.setString(2, movie.getTheLoai());
-            ps.setString(3, movie.getLoaiPhim());
-            ps.setString(4, movie.getDaoDien());
-            ps.setString(5, movie.getDienVien());
-            ps.setInt(6, movie.getDoTuoiGioiHan());
-            ps.setInt(7, movie.getThoiLuong());
-            ps.setString(8, movie.getNoiDung());
-            ps.setTimestamp(9, movie.getNgayKhoiChieu() != null ? 
+            ps.setString(2, movie.getLoaiPhim());
+            ps.setString(3, movie.getDienVien());
+            ps.setInt(4, movie.getDoTuoiGioiHan());
+            ps.setInt(5, movie.getThoiLuong());
+            ps.setString(6, movie.getNoiDung());
+            ps.setTimestamp(7, movie.getNgayKhoiChieu() != null ? 
                 java.sql.Timestamp.valueOf(movie.getNgayKhoiChieu()) : null);
-            ps.setString(10, movie.getPoster());
-            ps.setString(11, movie.getNgonNguPhuDe());
-            ps.setString(12, movie.getTrangThai() != null ? movie.getTrangThai() : "Sắp chiếu");
-            ps.setInt(13, movie.getMaPhim());
+            ps.setString(8, movie.getPoster());
+            ps.setString(9, movie.getNgonNguPhuDe());
+            ps.setString(10, movie.getTrangThai() != null ? movie.getTrangThai() : "Sắp chiếu");
+            ps.setInt(11, movie.getMaPhim());
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -172,7 +290,7 @@ public class MovieDAO extends DBContext {
      * Xóa phim (soft delete - chỉ cập nhật trạng thái)
      */
     public boolean deleteMovie(int maPhim) {
-        String sql = "UPDATE dbo.Movie SET TrangThai = 'Ngừng chiếu' WHERE MaPhim = ?";
+        String sql = "UPDATE dbo.Movie SET TrangThai = N'Ngừng chiếu' WHERE MaPhim = ?";
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, maPhim);
@@ -190,31 +308,57 @@ public class MovieDAO extends DBContext {
         Movie movie = new Movie();
         movie.setMaPhim(rs.getInt("MaPhim"));
         movie.setTenPhim(rs.getString("TenPhim"));
-        movie.setTheLoai(rs.getString("TheLoai"));
         movie.setLoaiPhim(rs.getString("LoaiPhim"));
-        movie.setDaoDien(rs.getString("DaoDien"));
         movie.setDienVien(rs.getString("DienVien"));
         movie.setDoTuoiGioiHan(rs.getInt("DoTuoiGioiHan"));
         movie.setThoiLuong(rs.getInt("ThoiLuong"));
         movie.setNoiDung(rs.getString("NoiDung"));
         
-        java.sql.Timestamp sqlNgayKhoiChieu = rs.getTimestamp("NgayKhoiChieu");
-        if (sqlNgayKhoiChieu != null) {
-            movie.setNgayKhoiChieu(sqlNgayKhoiChieu.toLocalDateTime());
+        // Parse NgayKhoiChieu from string
+        String ngayKhoiChieuStr = rs.getString("NgayKhoiChieu");
+        if (ngayKhoiChieuStr != null && !ngayKhoiChieuStr.trim().isEmpty()) {
+            try {
+                // Format: yyyy-MM-dd HH:mm:ss
+                String cleaned = ngayKhoiChieuStr.trim().replace(" ", "T");
+                if (cleaned.length() > 19) {
+                    cleaned = cleaned.substring(0, 19);
+                }
+                movie.setNgayKhoiChieu(LocalDateTime.parse(cleaned));
+            } catch (Exception e) {
+                System.out.println("[MovieDAO] Error parsing NgayKhoiChieu: " + ngayKhoiChieuStr + " - " + e.getMessage());
+            }
         }
         
         movie.setPoster(rs.getString("Poster"));
         movie.setNgonNguPhuDe(rs.getString("NgonNguPhuDe"));
         movie.setTrangThai(rs.getString("TrangThai"));
         
-        java.sql.Timestamp sqlTs = rs.getTimestamp("NgayTao");
-        if (sqlTs != null) {
-            movie.setNgayTao(sqlTs.toLocalDateTime());
+        // Parse NgayTao from string
+        String ngayTaoStr = rs.getString("NgayTao");
+        if (ngayTaoStr != null && !ngayTaoStr.trim().isEmpty()) {
+            try {
+                String cleaned = ngayTaoStr.trim().replace(" ", "T");
+                if (cleaned.length() > 19) {
+                    cleaned = cleaned.substring(0, 19);
+                }
+                movie.setNgayTao(LocalDateTime.parse(cleaned));
+            } catch (Exception e) {
+                System.out.println("[MovieDAO] Error parsing NgayTao: " + ngayTaoStr + " - " + e.getMessage());
+            }
         }
         
-        sqlTs = rs.getTimestamp("NgayCapNhat");
-        if (sqlTs != null) {
-            movie.setNgayCapNhat(sqlTs.toLocalDateTime());
+        // Parse NgayCapNhat from string
+        String ngayCapNhatStr = rs.getString("NgayCapNhat");
+        if (ngayCapNhatStr != null && !ngayCapNhatStr.trim().isEmpty()) {
+            try {
+                String cleaned = ngayCapNhatStr.trim().replace(" ", "T");
+                if (cleaned.length() > 19) {
+                    cleaned = cleaned.substring(0, 19);
+                }
+                movie.setNgayCapNhat(LocalDateTime.parse(cleaned));
+            } catch (Exception e) {
+                System.out.println("[MovieDAO] Error parsing NgayCapNhat: " + ngayCapNhatStr + " - " + e.getMessage());
+            }
         }
         
         return movie;

@@ -255,7 +255,7 @@ public class AdminProductServlet extends HttpServlet {
     }
 
     private String getUploadDir() {
-        return "D:\\JavaProject\\MovieTicketBookingSystem\\web\\assets\\image";
+        return "D:\\JavaProject\\MovieTicketSystem\\MovieTicketBookingSystem\\web\\assets\\image";
     }
 
     private void saveUploadedFile(Part part, String uploadDir, String fileName) throws IOException {

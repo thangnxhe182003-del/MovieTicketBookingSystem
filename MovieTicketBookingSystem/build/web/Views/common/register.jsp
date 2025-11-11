@@ -313,9 +313,31 @@
     const form = document.getElementById('registerForm');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^0\d{9}$/;
+    const usernameRegex = /^[a-zA-Z0-9_]+$/; // Chỉ cho phép chữ, số và dấu gạch dưới, không có dấu cách
+
+    // Xử lý username input - tự động loại bỏ dấu cách khi nhập
+    const usernameInput = document.getElementById('username');
+    usernameInput.addEventListener('input', function() {
+        // Loại bỏ tất cả dấu cách
+        this.value = this.value.replace(/\s/g, '');
+    });
+    
+    // Xử lý khi paste - loại bỏ dấu cách
+    usernameInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        // Loại bỏ tất cả dấu cách và chèn vào
+        this.value = pastedText.replace(/\s/g, '');
+    });
 
     function validateForm() {
         let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => {
+            el.classList.remove('show');
+            el.textContent = '';
+        });
 
         const hoten = document.getElementById('hoten').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -324,37 +346,83 @@
         const password = document.getElementById('password').value.trim();
         const confirm = document.getElementById('confirm').value.trim();
 
+        // Validate họ tên
         if (!hoten) {
             document.getElementById('hotenError').textContent = 'Vui lòng nhập họ tên';
             document.getElementById('hotenError').classList.add('show');
             isValid = false;
+        } else if (hoten.length < 2) {
+            document.getElementById('hotenError').textContent = 'Họ tên phải có ít nhất 2 ký tự';
+            document.getElementById('hotenError').classList.add('show');
+            isValid = false;
         }
 
-        if (!email || !emailRegex.test(email)) {
+        // Validate email
+        if (!email) {
+            document.getElementById('emailError').textContent = 'Vui lòng nhập email';
+            document.getElementById('emailError').classList.add('show');
+            isValid = false;
+        } else if (!emailRegex.test(email)) {
             document.getElementById('emailError').textContent = 'Email không hợp lệ';
             document.getElementById('emailError').classList.add('show');
             isValid = false;
         }
 
-        if (!phone || !phoneRegex.test(phone)) {
-            document.getElementById('phoneError').textContent = 'SĐT phải bắt đầu 0 và có 10 số';
+        // Validate số điện thoại
+        if (!phone) {
+            document.getElementById('phoneError').textContent = 'Vui lòng nhập số điện thoại';
+            document.getElementById('phoneError').classList.add('show');
+            isValid = false;
+        } else if (!phoneRegex.test(phone)) {
+            document.getElementById('phoneError').textContent = 'SĐT phải bắt đầu bằng 0 và có 10 số';
             document.getElementById('phoneError').classList.add('show');
             isValid = false;
         }
 
+        // Validate username
         if (!username) {
             document.getElementById('usernameError').textContent = 'Vui lòng nhập tên đăng nhập';
             document.getElementById('usernameError').classList.add('show');
             isValid = false;
+        } else if (username.length < 3) {
+            document.getElementById('usernameError').textContent = 'Tên đăng nhập phải có ít nhất 3 ký tự';
+            document.getElementById('usernameError').classList.add('show');
+            isValid = false;
+        } else if (username.length > 20) {
+            document.getElementById('usernameError').textContent = 'Tên đăng nhập không được quá 20 ký tự';
+            document.getElementById('usernameError').classList.add('show');
+            isValid = false;
+        } else if (/\s/.test(username)) {
+            document.getElementById('usernameError').textContent = 'Tên đăng nhập không được có dấu cách';
+            document.getElementById('usernameError').classList.add('show');
+            isValid = false;
+        } else if (!usernameRegex.test(username)) {
+            document.getElementById('usernameError').textContent = 'Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới (_)';
+            document.getElementById('usernameError').classList.add('show');
+            isValid = false;
         }
 
-        if (password.length < 6) {
-            document.getElementById('passwordError').textContent = 'Mật khẩu phải ít nhất 6 ký tự';
+        // Validate password
+        if (!password) {
+            document.getElementById('passwordError').textContent = 'Vui lòng nhập mật khẩu';
+            document.getElementById('passwordError').classList.add('show');
+            isValid = false;
+        } else if (password.length < 6) {
+            document.getElementById('passwordError').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+            document.getElementById('passwordError').classList.add('show');
+            isValid = false;
+        } else if (password.length > 50) {
+            document.getElementById('passwordError').textContent = 'Mật khẩu không được quá 50 ký tự';
             document.getElementById('passwordError').classList.add('show');
             isValid = false;
         }
 
-        if (password !== confirm) {
+        // Validate confirm password
+        if (!confirm) {
+            document.getElementById('confirmError').textContent = 'Vui lòng xác nhận mật khẩu';
+            document.getElementById('confirmError').classList.add('show');
+            isValid = false;
+        } else if (password !== confirm) {
             document.getElementById('confirmError').textContent = 'Mật khẩu không khớp';
             document.getElementById('confirmError').classList.add('show');
             isValid = false;
@@ -362,6 +430,69 @@
 
         return isValid;
     }
+
+    // Real-time validation cho username
+    usernameInput.addEventListener('blur', function() {
+        const username = this.value.trim();
+        const errorEl = document.getElementById('usernameError');
+        
+        if (username && /\s/.test(username)) {
+            errorEl.textContent = 'Tên đăng nhập không được có dấu cách';
+            errorEl.classList.add('show');
+            this.value = username.replace(/\s/g, ''); // Tự động loại bỏ dấu cách
+        } else if (username && !usernameRegex.test(username)) {
+            errorEl.textContent = 'Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới (_)';
+            errorEl.classList.add('show');
+        } else {
+            errorEl.classList.remove('show');
+        }
+    });
+
+    // Real-time validation cho mật khẩu và xác nhận mật khẩu
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm');
+    
+    function validatePasswordMatch() {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+        const errorEl = document.getElementById('confirmError');
+        
+        if (confirm && password && password !== confirm) {
+            errorEl.textContent = 'Mật khẩu không khớp';
+            errorEl.classList.add('show');
+        } else if (confirm && password && password === confirm) {
+            errorEl.classList.remove('show');
+        } else if (!confirm) {
+            errorEl.classList.remove('show');
+        }
+    }
+    
+    // Validate khi nhập mật khẩu gốc
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const errorEl = document.getElementById('passwordError');
+        
+        if (password && password.length < 6) {
+            errorEl.textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+            errorEl.classList.add('show');
+        } else if (password && password.length > 50) {
+            errorEl.textContent = 'Mật khẩu không được quá 50 ký tự';
+            errorEl.classList.add('show');
+        } else {
+            errorEl.classList.remove('show');
+        }
+        
+        // Kiểm tra lại xác nhận mật khẩu nếu đã nhập
+        if (confirmInput.value) {
+            validatePasswordMatch();
+        }
+    });
+    
+    // Validate khi nhập xác nhận mật khẩu
+    confirmInput.addEventListener('input', validatePasswordMatch);
+    
+    // Validate khi blur xác nhận mật khẩu
+    confirmInput.addEventListener('blur', validatePasswordMatch);
 
     form.addEventListener('submit', (e) => {
         if (!validateForm()) {

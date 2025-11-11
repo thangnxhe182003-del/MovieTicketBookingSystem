@@ -76,6 +76,24 @@
                 object-fit: cover;
                 border-radius: 8px;
                 border: 2px solid #e9ecef;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+            
+            .product-image.loaded {
+                opacity: 1;
+            }
+            
+            .product-image.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 8px;
+                text-align: center;
             }
             
             .product-name {
@@ -249,7 +267,7 @@
                                 <img src="${pageContext.request.contextPath}/assets/image/${product.thumbnailUrl}" 
                                      alt="${product.tenSP}" 
                                      class="product-image"
-                                     onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                                     data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0yNSAxMEMyNSA3LjIzOTEgMjcuMjM5MSA1IDMwIDVIMjBDMjIuNzYwOSA1IDI1IDcuMjM5MSAyNSAxMFY0MEMyNSA0Mi43NjA5IDIyLjc2MDkgNDUgMjAgNDVIMzBDMjcuMjM5MSA0NSAyNSA0Mi43NjA5IDI1IDQwVjEwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjE4IiB5PSIyMCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiPgo8cGF0aCBkPSJNMTIgMkwxMy4wOSA4LjI2TDIwIDlMMTMuMDkgMTUuNzRMMTIgMjJMMTAuOTEgMTUuNzRMNCA5TDEwLjkxIDguMjZMMTIgMloiIGZpbGw9IiM5OTkiLz4KPC9zdmc+Cjwvc3ZnPgo=">
                             </td>
                             <td>
                                 <div class="product-name">${product.tenSP}</div>
@@ -285,6 +303,34 @@
 </div>
 
 <script>
+    // Image loading handler
+    function handleImageLoad(img) {
+        img.classList.add('loaded');
+    }
+    
+    function handleImageError(img) {
+        img.classList.add('error');
+        if (img.dataset.fallback) {
+            img.src = img.dataset.fallback;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle image loading
+        document.querySelectorAll('img').forEach(img => {
+            if (img.complete) {
+                if (img.naturalHeight !== 0) {
+                    handleImageLoad(img);
+                } else {
+                    handleImageError(img);
+                }
+            } else {
+                img.addEventListener('load', () => handleImageLoad(img));
+                img.addEventListener('error', () => handleImageError(img));
+            }
+        });
+    });
+    
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();

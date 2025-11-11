@@ -292,6 +292,14 @@
                     <i class="fas fa-film"></i>
                     Phim
                 </a>
+                <a href="admin-genres" class="menu-item ${param.currentPage == 'genres' ? 'active' : ''}">
+                    <i class="fas fa-layer-group"></i>
+                    Thể loại
+                </a>
+                <a href="admin-directors" class="menu-item ${param.currentPage == 'directors' ? 'active' : ''}">
+                    <i class="fas fa-user-tie"></i>
+                    Đạo diễn
+                </a>
                 <a href="admin-rooms" class="menu-item ${param.currentPage == 'rooms' ? 'active' : ''}">
                     <i class="fas fa-chair"></i>
                     Phòng & Ghế
@@ -300,9 +308,17 @@
                     <i class="fas fa-clock"></i>
                     Suất chiếu
                 </a>
-                <a href="admin-bookings" class="menu-item ${param.currentPage == 'bookings' ? 'active' : ''}">
+                <a href="admin-tickets" class="menu-item ${param.currentPage == 'bookings' ? 'active' : ''}">
                     <i class="fas fa-ticket-alt"></i>
                     Đặt vé
+                </a>
+                <a href="admin-discounts" class="menu-item ${param.currentPage == 'discounts' ? 'active' : ''}">
+                    <i class="fas fa-tag"></i>
+                    Mã giảm giá
+                </a>
+                <a href="admin-sliders" class="menu-item ${param.currentPage == 'sliders' ? 'active' : ''}">
+                    <i class="fas fa-images"></i>
+                    Slider
                 </a>
             </div>
             

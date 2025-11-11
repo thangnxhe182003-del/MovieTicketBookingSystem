@@ -161,6 +161,24 @@
                 object-fit: cover;
                 border-radius: 4px;
                 border: 1px solid #e9ecef;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+            
+            .movie-poster.loaded {
+                opacity: 1;
+            }
+            
+            .movie-poster.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 10px;
+                text-align: center;
             }
             
             .movie-info {
@@ -251,22 +269,18 @@
             <label>Thể loại</label>
             <select id="genreFilter">
                 <option value="">Tất cả thể loại</option>
-                <option value="Hành động">Hành động</option>
-                <option value="Hài">Hài</option>
-                <option value="Kinh dị">Kinh dị</option>
-                <option value="Lãng mạn">Lãng mạn</option>
-                <option value="Khoa học viễn tưởng">Khoa học viễn tưởng</option>
-                <option value="Hoạt hình">Hoạt hình</option>
-                <option value="Tài liệu">Tài liệu</option>
+                <c:forEach var="genre" items="${genres}">
+                    <option value="${genre}">${genre}</option>
+                </c:forEach>
             </select>
         </div>
         <div class="filter-group">
             <label>Trạng thái</label>
             <select id="statusFilter">
                 <option value="">Tất cả</option>
-                <option value="upcoming">Sắp chiếu</option>
-                <option value="current">Đang chiếu</option>
-                <option value="past">Đã chiếu</option>
+                <option value="Sắp chiếu">Sắp chiếu</option>
+                <option value="Đang chiếu">Đang chiếu</option>
+                <option value="Ngừng chiếu">Ngừng chiếu</option>
             </select>
         </div>
     </div>
@@ -296,16 +310,16 @@
                                     <img src="${pageContext.request.contextPath}/assets/image/${movie.poster}" 
                                          alt="${movie.tenPhim}" 
                                          class="movie-poster"
-                                         onerror="this.src='https://via.placeholder.com/60x80?text=No+Image'">
+                                         data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA2MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0zMCAyMEMzMCAxNi42ODYzIDMyLjY4NjMgMTQgMzYgMTRIMjRDMjcuMzEzNyAxNCAzMCAxNi42ODYzIDMwIDIwVjYwQzMwIDYzLjMxMzcgMjcuMzEzNyA2NiAyNCA2NkgzNkMzMi42ODYzIDY2IDMwIDYzLjMxMzcgMzAgNjBWMjBaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxzdmcgeD0iMjIiIHk9IjM1IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                                 </td>
                                 <td>
                                     <div class="movie-info">
                                         <div class="movie-title">${movie.tenPhim}</div>
-                                        <div class="movie-genre">${movie.daoDien}</div>
+                                        <div class="movie-genre">${movieIdToDirectors[movie.maPhim]}</div>
                                         <div class="movie-duration">${movie.dienVien}</div>
                                     </div>
                                 </td>
-                                <td>${movie.theLoai}</td>
+                                <td>${movieIdToGenres[movie.maPhim]}</td>
                                 <td>${movie.loaiPhim}</td>
                                 <td>${movie.doTuoiGioiHan}+</td>
                                 <td>${movie.thoiLuong} phút</td>
@@ -314,14 +328,17 @@
                                 </td>
                                 <td>
                                     <c:choose>
-                                        <c:when test="${movie.ngayKhoiChieu > today}">
+                                        <c:when test="${movie.trangThai == 'Sắp chiếu'}">
                                             <span class="status-badge status-upcoming">Sắp chiếu</span>
                                         </c:when>
-                                        <c:when test="${movie.ngayKhoiChieu <= today}">
+                                        <c:when test="${movie.trangThai == 'Đang chiếu'}">
                                             <span class="status-badge status-current">Đang chiếu</span>
                                         </c:when>
+                                        <c:when test="${movie.trangThai == 'Ngừng chiếu'}">
+                                            <span class="status-badge status-past">Ngừng chiếu</span>
+                                        </c:when>
                                         <c:otherwise>
-                                            <span class="status-badge status-past">Đã chiếu</span>
+                                            <span class="status-badge status-past">${movie.trangThai != null ? movie.trangThai : 'N/A'}</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
@@ -360,6 +377,34 @@
 </div>
 
 <script>
+    // Image loading handler
+    function handleImageLoad(img) {
+        img.classList.add('loaded');
+    }
+    
+    function handleImageError(img) {
+        img.classList.add('error');
+        if (img.dataset.fallback) {
+            img.src = img.dataset.fallback;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle image loading
+        document.querySelectorAll('img').forEach(img => {
+            if (img.complete) {
+                if (img.naturalHeight !== 0) {
+                    handleImageLoad(img);
+                } else {
+                    handleImageError(img);
+                }
+            } else {
+                img.addEventListener('load', () => handleImageLoad(img));
+                img.addEventListener('error', () => handleImageError(img));
+            }
+        });
+    });
+    
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
@@ -400,15 +445,7 @@
         
         rows.forEach(row => {
             const statusBadge = row.querySelector('.status-badge');
-            let status = '';
-            
-            if (statusBadge.classList.contains('status-upcoming')) {
-                status = 'upcoming';
-            } else if (statusBadge.classList.contains('status-current')) {
-                status = 'current';
-            } else if (statusBadge.classList.contains('status-past')) {
-                status = 'past';
-            }
+            const status = statusBadge ? statusBadge.textContent.trim() : '';
             
             if (selectedStatus === '' || status === selectedStatus) {
                 row.style.display = '';

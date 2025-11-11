@@ -260,15 +260,15 @@ ${param.extraStyles}
             <span>MovieNow</span>
         </a>
 
-        <div class="search-bar">
+        <form class="search-bar" method="GET" action="home">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Tìm phim, rạp, ưu đãi...">
-        </div>
+            <input type="text" name="q" placeholder="Tìm phim..." value="${param.q}">
+        </form>
     </div>
 
     <nav>
         <a href="home">Phim</a>
-        <a href="#book">Sản phẩm</a>
+        <a href="products">Sản phẩm</a>
     </nav>
 
     <div class="header-right">
@@ -279,7 +279,7 @@ ${param.extraStyles}
                         👋 ${sessionScope.loggedInUser.hoTen}
                     </span>
                     <a href="profile">Tài khoản</a>
-                    <a href="#">Vé của tôi</a>
+                    <a href="order-history">Vé của tôi</a>
                     <a href="logout">Đăng xuất</a>
                 </c:when>
                 <c:when test="${not empty sessionScope.loggedInStaff}">
