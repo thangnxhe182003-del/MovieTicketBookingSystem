@@ -1,22 +1,26 @@
+
 package Controller;
 
-import dal.CustomerDAO;
 import Model.Customer;
+import Model.Staff;
+import dal.CustomerDAO;
+import dal.StaffDAO;
+import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
+import java.sql.SQLException;
 
-@WebServlet("/LoginServlet")
+@WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
-    private CustomerDAO customerDAO;
 
     @Override
-    public void init() throws ServletException {
-        customerDAO = new CustomerDAO();
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect("Login.jsp");
     }
 
     @Override
@@ -25,29 +29,50 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        System.out.println("Login attempt at " + new java.util.Date() + 
-                          ": Received username='" + username + "', password='" + password + "'");
+        CustomerDAO customerDAO = new CustomerDAO();
+        StaffDAO staffDAO = new StaffDAO();
+        HttpSession session = request.getSession();
 
-        if (customerDAO == null) {
-            throw new ServletException("CustomerDAO not initialized");
-        }
+        try {
+            // Thử authenticate customer trước
+            Customer customer = customerDAO.authenticate(username, password);
+            if (customer != null) {
+                session.setAttribute("user", customer);
+                session.setAttribute("userType", "customer");
+                session.setAttribute("fullName", customer.getHoTen());
+                session.setAttribute("birthDate", customer.getNgaySinh());
+                session.setAttribute("gender", customer.getGioiTinh());
+                session.setAttribute("phone", customer.getSoDienThoai());
+                session.setAttribute("email", customer.getEmail());
+                session.setAttribute("points", customer.getDiemHienCo());
+                session.setAttribute("maKH", customer.getMaKH());
+                session.setAttribute("avatar", customer.getAvatar()); // Thêm avatar cho Customer
+                session.setAttribute("role", null);
+                response.sendRedirect("home.jsp");
+                return;
+            }
 
-        Customer customer = customerDAO.authenticate(username, password);
+            // Nếu không phải customer, thử staff
+            Staff staff = staffDAO.authenticate(username, password);
+            if (staff != null) {
+                session.setAttribute("user", staff);
+                session.setAttribute("userType", "staff");
+                session.setAttribute("fullName", staff.getHoTen());
+                session.setAttribute("phone", staff.getSoDienThoai());
+                session.setAttribute("email", staff.getEmail());
+                session.setAttribute("maNhanVien", staff.getMaNhanVien());
+                session.setAttribute("role", staff.getChucVu());
+                session.setAttribute("khuVucQuanLy", staff.getKhuVucQuanLy()); // Thêm KhuVucQuanLy cho Staff
+                session.setAttribute("avatar", staff.getAvatar()); // Thêm avatar cho Staff
+                response.sendRedirect("home.jsp");
+                return;
+            }
 
-        if (customer != null) {
-            HttpSession session = request.getSession();
-            session.setAttribute("userType", "customer");
-            session.setAttribute("fullName", customer.getHoTen());
-            session.setAttribute("customer", customer);
-            session.setAttribute("maKH", customer.getMaKH());
-            session.setAttribute("diemHienCo", customer.getDiemHienCo());
-
-            System.out.println("Login successful for: " + customer.getHoTen());
-            response.sendRedirect("home.jsp?success=true"); // Chuyển hướng với thông báo
-        } else {
-            System.out.println("Login failed for username: " + username);
-            request.setAttribute("username", username);
-            request.setAttribute("passwordError", "Tên đăng nhập hoặc mật khẩu không đúng!");
+            request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
+            request.getRequestDispatcher("Login.jsp").forward(request, response);
+        } catch (SQLException e) {
+            request.setAttribute("error", "Lỗi khi kết nối đến cơ sở dữ liệu: " + e.getMessage());
+            System.err.println("Login failed: " + e.getMessage());
             request.getRequestDispatcher("Login.jsp").forward(request, response);
         }
     }
