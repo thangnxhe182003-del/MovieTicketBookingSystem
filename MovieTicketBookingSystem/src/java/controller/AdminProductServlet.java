@@ -21,6 +21,9 @@ public class AdminProductServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Manager mới được truy cập
+        if (!util.RoleChecker.requireManager(request, response)) return;
+        
         String action = request.getParameter("action");
         
         if (action == null) {
@@ -47,6 +50,9 @@ public class AdminProductServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Manager mới được truy cập
+        if (!util.RoleChecker.requireManager(request, response)) return;
+        
         String action = request.getParameter("action");
         
         if (action == null) {
@@ -226,12 +232,23 @@ public class AdminProductServlet extends HttpServlet {
 
         try {
             int maSP = Integer.parseInt(maSPStr);
-            boolean success = productDAO.deleteProduct(maSP);
+            
+            // Lấy thông tin sản phẩm hiện tại
+            Product currentProduct = productDAO.getProductById(maSP);
+            if (currentProduct == null) {
+                request.setAttribute("error", "Không tìm thấy sản phẩm");
+                response.sendRedirect("admin-products");
+                return;
+            }
+            
+            // Cập nhật trạng thái thành "Không bán" thay vì xóa
+            currentProduct.setTrangThai("Không bán");
+            boolean success = productDAO.updateProduct(currentProduct);
             
             if (success) {
-                request.setAttribute("success", "Xóa sản phẩm thành công");
+                request.setAttribute("success", "Đã ngừng bán sản phẩm thành công");
             } else {
-                request.setAttribute("error", "Có lỗi xảy ra khi xóa sản phẩm");
+                request.setAttribute("error", "Có lỗi xảy ra khi cập nhật trạng thái sản phẩm");
             }
             
             response.sendRedirect("admin-products");
@@ -255,7 +272,7 @@ public class AdminProductServlet extends HttpServlet {
     }
 
     private String getUploadDir() {
-        return "D:\\JavaProject\\MovieTicketBookingSystem\\web\\assets\\image";
+        return "D:\\JavaProject\\MovieTicketSystem\\MovieTicketBookingSystem\\web\\assets\\image";
     }
 
     private void saveUploadedFile(Part part, String uploadDir, String fileName) throws IOException {

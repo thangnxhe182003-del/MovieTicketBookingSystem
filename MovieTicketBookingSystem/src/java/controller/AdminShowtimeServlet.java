@@ -32,6 +32,9 @@ public class AdminShowtimeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Manager mới được truy cập
+        if (!util.RoleChecker.requireManager(request, response)) return;
+        
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -65,6 +68,9 @@ public class AdminShowtimeServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Manager mới được truy cập
+        if (!util.RoleChecker.requireManager(request, response)) return;
+        
         String action = request.getParameter("action");
         if (action == null) {
             response.sendRedirect("admin-showtimes");
@@ -93,27 +99,115 @@ public class AdminShowtimeServlet extends HttpServlet {
 
     private void listShowtimes(HttpServletRequest request, HttpServletResponse response, ShowtimeDAO showtimeDAO)
             throws ServletException, IOException {
-        // Lấy suất chiếu trong 7 ngày tới
-        java.time.LocalDate today = java.time.LocalDate.now();
-        java.time.LocalDate endDate = today.plusDays(7);
-
-        List<Showtime> allShowtimes = showtimeDAO.getShowtimesInDateRange(today, endDate);
-
-        // Nhóm suất chiếu theo ngày
-        java.util.Map<String, java.util.List<Showtime>> showtimesByDate = new java.util.HashMap<>();
-        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", java.util.Locale.forLanguageTag("vi"));
-        java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
-
-        for (Showtime showtime : allShowtimes) {
-            if (showtime.getNgayChieu() != null) {
-                java.time.LocalDate date = showtime.getNgayChieu().toLocalDate();
-                String formattedDate = date.format(dateFormatter);
-                showtimesByDate.computeIfAbsent(formattedDate, k -> new java.util.ArrayList<>()).add(showtime);
+        // Lấy tham số filter từ request
+        String cinemaFilter = request.getParameter("cinema");
+        String roomFilter = request.getParameter("room");
+        String dateFilter = request.getParameter("date");
+        
+        // Xác định khoảng ngày (mặc định 7 ngày tới)
+        java.time.LocalDate startDate = java.time.LocalDate.now();
+        java.time.LocalDate endDate = startDate.plusDays(7);
+        
+        if (dateFilter != null && !dateFilter.isEmpty()) {
+            try {
+                startDate = java.time.LocalDate.parse(dateFilter);
+                endDate = startDate.plusDays(1); // Chỉ lấy ngày được chọn
+            } catch (Exception e) {
+                // Nếu parse lỗi, dùng giá trị mặc định
             }
         }
 
-        request.setAttribute("showtimesByDate", showtimesByDate);
+        List<Showtime> allShowtimes = showtimeDAO.getShowtimesInDateRange(startDate, endDate);
+
+        // Apply filters
+        List<Showtime> filteredShowtimes = new ArrayList<>();
+        for (Showtime showtime : allShowtimes) {
+            boolean shouldInclude = true;
+            
+            if (cinemaFilter != null && !cinemaFilter.isEmpty()) {
+                if (showtime.getTenRap() == null || !showtime.getTenRap().toLowerCase().contains(cinemaFilter.toLowerCase())) {
+                    shouldInclude = false;
+                }
+            }
+            
+            if (roomFilter != null && !roomFilter.isEmpty()) {
+                if (showtime.getTenPhong() == null || !showtime.getTenPhong().toLowerCase().contains(roomFilter.toLowerCase())) {
+                    shouldInclude = false;
+                }
+            }
+            
+            if (shouldInclude) {
+                filteredShowtimes.add(showtime);
+            }
+        }
+
+        // Nhóm suất chiếu theo rạp > ngày > phòng
+        Map<String, Map<String, Map<String, List<Showtime>>>> organizedShowtimes = new java.util.LinkedHashMap<>();
+        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", java.util.Locale.forLanguageTag("vi"));
+        java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+
+        // Set current time để kiểm tra suất chiếu quá khứ
+        LocalDateTime now = LocalDateTime.now();
+        request.setAttribute("currentTime", now);
+        
+        for (Showtime showtime : filteredShowtimes) {
+            if (showtime.getNgayChieu() != null) {
+                String cinema = showtime.getTenRap() != null ? showtime.getTenRap() : "Rạp không xác định";
+                java.time.LocalDate date = showtime.getNgayChieu().toLocalDate();
+                String formattedDate = date.format(dateFormatter);
+                String room = showtime.getTenPhong() != null ? showtime.getTenPhong() : "Phòng không xác định";
+                
+                organizedShowtimes
+                    .computeIfAbsent(cinema, k -> new java.util.LinkedHashMap<>())
+                    .computeIfAbsent(formattedDate, k -> new java.util.LinkedHashMap<>())
+                    .computeIfAbsent(room, k -> new ArrayList<>())
+                    .add(showtime);
+            }
+        }
+        
+        // Sort showtimes by time within each room
+        for (Map<String, Map<String, List<Showtime>>> dateMap : organizedShowtimes.values()) {
+            for (Map<String, List<Showtime>> roomMap : dateMap.values()) {
+                for (List<Showtime> showtimes : roomMap.values()) {
+                    showtimes.sort((s1, s2) -> s1.getGioBatDau().compareTo(s2.getGioBatDau()));
+                }
+            }
+        }
+
+        // Lấy danh sách rạp và phòng để populate filter dropdowns
+        RoomDAO roomDAO = new RoomDAO();
+        List<Room> allRooms = roomDAO.getAllRooms();
+        
+        // Extract unique cinema names
+        java.util.Set<String> cinemaNames = new java.util.LinkedHashSet<>();
+        for (Room room : allRooms) {
+            if (room.getTenRap() != null) {
+                cinemaNames.add(room.getTenRap());
+            }
+        }
+
+        // Convert rooms to JSON for dynamic filtering
+        StringBuilder roomsJson = new StringBuilder("[");
+        for (int i = 0; i < allRooms.size(); i++) {
+            Room room = allRooms.get(i);
+            if (i > 0) roomsJson.append(",");
+            roomsJson.append("{")
+                .append("\"tenPhong\":\"").append(room.getTenPhong() != null ? room.getTenPhong().replace("\"", "\\\"") : "").append("\",")
+                .append("\"tenRap\":\"").append(room.getTenRap() != null ? room.getTenRap().replace("\"", "\\\"") : "").append("\"")
+                .append("}");
+        }
+        roomsJson.append("]");
+        
+        request.setAttribute("organizedShowtimes", organizedShowtimes);
         request.setAttribute("timeFormatter", timeFormatter);
+        request.setAttribute("allRooms", allRooms);
+        request.setAttribute("allRoomsJson", roomsJson.toString());
+        request.setAttribute("cinemaNames", cinemaNames);
+        request.setAttribute("selectedCinema", cinemaFilter);
+        request.setAttribute("selectedRoom", roomFilter);
+        request.setAttribute("selectedDate", dateFilter);
+        request.setAttribute("totalShowtimes", filteredShowtimes.size());
+        
         request.getRequestDispatcher("Views/admin/showtime-list.jsp").forward(request, response);
     }
 
@@ -173,7 +267,9 @@ public class AdminShowtimeServlet extends HttpServlet {
             java.time.LocalTime gioKetThucTime = java.time.LocalTime.parse(request.getParameter("gioKetThuc"));
             java.time.LocalDateTime gioBatDau = ngayChieu.toLocalDate().atTime(gioBatDauTime);
             java.time.LocalDateTime gioKetThuc = ngayChieu.toLocalDate().atTime(gioKetThucTime);
-            BigDecimal giaVeCoSo = new BigDecimal(request.getParameter("giaVeCoSo"));
+            BigDecimal giaVeCoSo = parseDecimalOrDefault(request.getParameter("giaVeCoSo"), new BigDecimal("75000"));
+            BigDecimal giaVeTreEm = parseDecimalOrDefault(request.getParameter("giaVeTreEm"), new BigDecimal("50000"));
+            BigDecimal vat = parseDecimalOrDefault(request.getParameter("vat"), new BigDecimal("10.00"));
             String ngonNguAmThanh = request.getParameter("ngonNguAmThanh");
 
             // Debug: In ra dữ liệu từ form
@@ -191,16 +287,32 @@ public class AdminShowtimeServlet extends HttpServlet {
             System.out.println("=================================");
             
             // Kiểm tra trùng giờ và lấy thông tin chi tiết
-            Showtime conflictingShowtime = showtimeDAO.getConflictingShowtime(maPhong, ngayChieu.toLocalDate(), gioBatDau.toLocalTime(), gioKetThuc.toLocalTime(), 0);
+            System.out.println(">>> BẮT ĐẦU KIỂM TRA XUNG ĐỘT");
+            System.out.println("Tham số: maPhong=" + maPhong + ", ngayChieu=" + ngayChieu.toLocalDate() + 
+                             ", gioBatDau=" + gioBatDau.toLocalTime() + ", gioKetThuc=" + gioKetThuc.toLocalTime());
+            
+            Showtime conflictingShowtime = showtimeDAO.getConflictingShowtime(
+                maPhong, 
+                ngayChieu.toLocalDate(), 
+                gioBatDau.toLocalTime(), 
+                gioKetThuc.toLocalTime(), 
+                0
+            );
+            
+            System.out.println(">>> KẾT QUẢ KIỂM TRA: " + (conflictingShowtime != null ? "CÓ XUNG ĐỘT" : "KHÔNG XUNG ĐỘT"));
+            
             if (conflictingShowtime != null) {
-                String errorMessage = String.format("Không thể tạo suất chiếu! Phòng đã có suất chiếu phim '%s' từ %s đến %s trong khung giờ này.", 
+                String errorMessage = String.format("Không thể tạo suất chiếu! Phòng đã có suất chiếu phim '%s' từ %s đến %s trong khung giờ này. Vui lòng chọn khung giờ khác.", 
                     conflictingShowtime.getTenPhim(),
                     conflictingShowtime.getGioBatDau().toLocalTime().toString(),
                     conflictingShowtime.getGioKetThuc().toLocalTime().toString()
                 );
+                System.out.println(">>> CHẶN TẠO SUẤT CHIẾU: " + errorMessage);
                 response.sendRedirect("admin-showtimes?action=create&error=" + java.net.URLEncoder.encode(errorMessage, "UTF-8"));
                 return;
             }
+            
+            System.out.println(">>> CHO PHÉP TẠO SUẤT CHIẾU");
 
             Showtime showtime = new Showtime();
             showtime.setMaPhim(maPhim);
@@ -209,6 +321,8 @@ public class AdminShowtimeServlet extends HttpServlet {
             showtime.setGioBatDau(gioBatDau);
             showtime.setGioKetThuc(gioKetThuc);
             showtime.setGiaVeCoSo(giaVeCoSo);
+            showtime.setGiaVeTreEm(giaVeTreEm);
+            showtime.setVat(vat);
             showtime.setNgonNguAmThanh(ngonNguAmThanh);
 
             if (showtimeDAO.addShowtime(showtime)) {
@@ -237,7 +351,9 @@ public class AdminShowtimeServlet extends HttpServlet {
             java.time.LocalTime gioKetThucTime = java.time.LocalTime.parse(request.getParameter("gioKetThuc"));
             java.time.LocalDateTime gioBatDau = ngayChieu.toLocalDate().atTime(gioBatDauTime);
             java.time.LocalDateTime gioKetThuc = ngayChieu.toLocalDate().atTime(gioKetThucTime);
-            BigDecimal giaVeCoSo = new BigDecimal(request.getParameter("giaVeCoSo"));
+            BigDecimal giaVeCoSo = parseDecimalOrDefault(request.getParameter("giaVeCoSo"), new BigDecimal("75000"));
+            BigDecimal giaVeTreEm = parseDecimalOrDefault(request.getParameter("giaVeTreEm"), new BigDecimal("50000"));
+            BigDecimal vat = parseDecimalOrDefault(request.getParameter("vat"), new BigDecimal("10.00"));
             String ngonNguAmThanh = request.getParameter("ngonNguAmThanh");
 
             // Kiểm tra trùng giờ và lấy thông tin chi tiết (loại trừ suất chiếu hiện tại)
@@ -260,6 +376,8 @@ public class AdminShowtimeServlet extends HttpServlet {
             showtime.setGioBatDau(gioBatDau);
             showtime.setGioKetThuc(gioKetThuc);
             showtime.setGiaVeCoSo(giaVeCoSo);
+            showtime.setGiaVeTreEm(giaVeTreEm);
+            showtime.setVat(vat);
             showtime.setNgonNguAmThanh(ngonNguAmThanh);
 
             if (showtimeDAO.updateShowtime(showtime)) {
@@ -450,6 +568,8 @@ public class AdminShowtimeServlet extends HttpServlet {
         String ngayChieuStr = request.getParameter("ngayChieu");
         String giaVeStr = request.getParameter("giaVeCoSo");
         String ngonNguStr = request.getParameter("ngonNguAmThanh");
+        String giaVeTreEmStr = request.getParameter("giaVeTreEm");
+        String vatStr = request.getParameter("vat");
         String[] selectedSlots = request.getParameterValues("selectedSlots");
 
         // Debug logs
@@ -459,6 +579,8 @@ public class AdminShowtimeServlet extends HttpServlet {
         System.out.println("Debug - ngayChieu: " + ngayChieuStr);
         System.out.println("Debug - giaVeCoSo: " + giaVeStr);
         System.out.println("Debug - ngonNguAmThanh: " + ngonNguStr);
+        System.out.println("Debug - giaVeTreEm: " + giaVeTreEmStr);
+        System.out.println("Debug - vat: " + vatStr);
         System.out.println("Debug - selectedSlots: " + (selectedSlots != null ? java.util.Arrays.toString(selectedSlots) : "null"));
 
         if (maPhimStr == null || maPhongStr == null || ngayChieuStr == null || giaVeStr == null || ngonNguStr == null || selectedSlots == null || selectedSlots.length == 0) {
@@ -473,6 +595,8 @@ public class AdminShowtimeServlet extends HttpServlet {
             int maPhong = Integer.parseInt(maPhongStr);
             LocalDate ngayChieu = LocalDate.parse(ngayChieuStr);
             BigDecimal giaVeCoSo = new BigDecimal(giaVeStr);
+            BigDecimal giaVeTreEm = parseDecimalOrDefault(giaVeTreEmStr, null);
+            BigDecimal vat = parseDecimalOrDefault(vatStr, null);
 
             int successCount = 0;
             int failCount = 0;
@@ -509,28 +633,32 @@ public class AdminShowtimeServlet extends HttpServlet {
                         continue;
                     }
 
-//                    // Tạo suất chiếu
-//                    Showtime showtime = new Showtime();
-//                    showtime.setMaPhim(maPhim);
-//                    showtime.setMaPhong(maPhong);
-//                    showtime.setNgayChieu(ngayChieuDateTime);
-//                    showtime.setGioBatDau(gioBatDauDateTime);
-//                    showtime.setGioKetThuc(gioKetThucDateTime);
-//                    showtime.setGiaVeCoSo(giaVeCoSo); // Giá từ form
-//                    showtime.setNgonNguAmThanh(ngonNguStr != null ? ngonNguStr : "Tiếng Việt");
-//
-//                    System.out.println("Debug - Creating showtime: " + showtime);
-//                    boolean addResult = showtimeDAO.addShowtime(showtime);
-//                    System.out.println("Debug - Add result: " + addResult);
-//
-//                    if (addResult) {
-//                        successCount++;
-//                        System.out.println("Debug - Successfully created showtime for slot: " + slot);
-//                    } else {
-//                        failCount++;
-//                        errorMessages.append("Không thể tạo suất chiếu ").append(slot).append("\n");
-//                        System.out.println("Debug - Failed to create showtime for slot: " + slot);
-//                    }
+                    // Tạo suất chiếu
+                    Showtime showtime = new Showtime();
+                    showtime.setMaPhim(maPhim);
+                    showtime.setMaPhong(maPhong);
+                    showtime.setNgayChieu(ngayChieuDateTime);
+                    showtime.setGioBatDau(gioBatDauDateTime);
+                    showtime.setGioKetThuc(gioKetThucDateTime);
+                    showtime.setGiaVeCoSo(giaVeCoSo); // Giá từ form
+                    showtime.setGiaVeTreEm(giaVeTreEm);
+                    showtime.setVat(vat);
+                    showtime.setNgonNguAmThanh(ngonNguStr != null ? ngonNguStr : "Tiếng Việt");
+
+                    System.out.println("Debug - Creating showtime: " + showtime);
+                    boolean addResult = showtimeDAO.addShowtime(showtime);
+                    System.out.println("Debug - Add result: " + addResult);
+
+                    if (addResult) {
+                        // Tạo ticket cho tất cả ghế trong phòng
+                        createTicketsForShowtime(showtime.getMaSuatChieu(), maPhong, giaVeCoSo);
+                        successCount++;
+                        System.out.println("Debug - Successfully created showtime for slot: " + slot);
+                    } else {
+                        failCount++;
+                        errorMessages.append("Không thể tạo suất chiếu ").append(slot).append("\n");
+                        System.out.println("Debug - Failed to create showtime for slot: " + slot);
+                    }
 
                 } catch (Exception e) {
                     failCount++;
@@ -562,4 +690,13 @@ public class AdminShowtimeServlet extends HttpServlet {
         }
     }
 
+    // Helper: parse BigDecimal with default
+    private BigDecimal parseDecimalOrDefault(String value, BigDecimal defaultVal) {
+        try {
+            if (value == null || value.trim().isEmpty()) return defaultVal;
+            return new BigDecimal(value.trim());
+        } catch (Exception e) {
+            return defaultVal;
+        }
+    }
 }

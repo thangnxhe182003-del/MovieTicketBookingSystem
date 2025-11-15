@@ -1,6 +1,10 @@
 package controller;
 
 import dal.MovieDAO;
+import dal.GenreDAO;
+import dal.DirectorDAO;
+import dal.TrailerDAO;
+import dal.ShowtimeDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import model.Movie;
+import model.Trailer;
 
 @MultipartConfig
 public class AdminMovieServlet extends HttpServlet {
@@ -23,6 +28,8 @@ public class AdminMovieServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Manager mới được truy cập
+        if (!util.RoleChecker.requireManager(request, response)) return;
         String action = request.getParameter("action");
         
         if (action == null) {
@@ -49,6 +56,9 @@ public class AdminMovieServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Manager mới được truy cập
+        if (!util.RoleChecker.requireManager(request, response)) return;
+        
         String action = request.getParameter("action");
         
         if (action == null) {
@@ -90,12 +100,39 @@ public class AdminMovieServlet extends HttpServlet {
         }
         request.setAttribute("dateLabelMap", dateLabelMap);
         
+        // Join: lấy tên thể loại và đạo diễn từ bảng liên kết
+        GenreDAO genreDAO = new GenreDAO();
+        DirectorDAO directorDAO = new DirectorDAO();
+        java.util.Map<Integer, String> movieIdToGenres = new java.util.HashMap<>();
+        java.util.Map<Integer, String> movieIdToDirectors = new java.util.HashMap<>();
+        for (Movie movie : movies) {
+            java.util.List<String> gnames = genreDAO.getGenreNamesByMovie(movie.getMaPhim());
+            java.util.List<String> dnames = directorDAO.getDirectorNamesByMovie(movie.getMaPhim());
+            movieIdToGenres.put(movie.getMaPhim(), String.join(", ", gnames));
+            movieIdToDirectors.put(movie.getMaPhim(), String.join(", ", dnames));
+        }
         request.setAttribute("movies", movies);
+        request.setAttribute("movieIdToGenres", movieIdToGenres);
+        request.setAttribute("movieIdToDirectors", movieIdToDirectors);
+        // Lấy danh sách thể loại từ bảng Genre cho filter
+        java.util.List<String> sortedGenres = new java.util.ArrayList<>();
+        try {
+//            GenreDAO genreDAO = new GenreDAO();
+            for (model.Genre g : genreDAO.getAll()) {
+                sortedGenres.add(g.getTenTheLoai());
+            }
+        } catch (Exception ignore) {}
+        request.setAttribute("genres", sortedGenres);
         request.getRequestDispatcher("Views/admin/movie-list.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Load danh sách Genre/Director cho multi-select
+        GenreDAO genreDAO = new GenreDAO();
+        DirectorDAO directorDAO = new DirectorDAO();
+        request.setAttribute("allGenres", genreDAO.getAll());
+        request.setAttribute("allDirectors", directorDAO.getAll());
         request.getRequestDispatcher("Views/admin/movie-form.jsp").forward(request, response);
     }
 
@@ -118,7 +155,28 @@ public class AdminMovieServlet extends HttpServlet {
                 return;
             }
 
+            // Lấy trailer của phim (lấy trailer đầu tiên nếu có)
+            TrailerDAO trailerDAO = new TrailerDAO();
+            List<Trailer> trailers = trailerDAO.getTrailersByMovie(maPhim);
+            Trailer trailer = trailers.isEmpty() ? null : trailers.get(0);
+
+            // Load danh sách Genre/Director và đã chọn
+            GenreDAO genreDAO = new GenreDAO();
+            DirectorDAO directorDAO = new DirectorDAO();
+            request.setAttribute("allGenres", genreDAO.getAll());
+            request.setAttribute("allDirectors", directorDAO.getAll());
+            request.setAttribute("selectedGenreIds", genreDAO.getGenreIdsByMovie(maPhim));
+            request.setAttribute("selectedDirectorIds", directorDAO.getDirectorIdsByMovie(maPhim));
+            
+            // Format ngày khởi chiếu cho JSP
+            String ngayKhoiChieuFormatted = null;
+            if (movie.getNgayKhoiChieu() != null) {
+                ngayKhoiChieuFormatted = movie.getNgayKhoiChieu().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+
             request.setAttribute("movie", movie);
+            request.setAttribute("trailer", trailer);
+            request.setAttribute("ngayKhoiChieuFormatted", ngayKhoiChieuFormatted);
             request.getRequestDispatcher("Views/admin/movie-form.jsp").forward(request, response);
         } catch (NumberFormatException e) {
             response.sendRedirect("admin-movies");
@@ -128,9 +186,9 @@ public class AdminMovieServlet extends HttpServlet {
     private void createMovie(HttpServletRequest request, HttpServletResponse response, MovieDAO movieDAO)
             throws ServletException, IOException {
         String tenPhim = request.getParameter("tenPhim");
-        String theLoai = request.getParameter("theLoai");
+        String[] genreIdsParam = request.getParameterValues("genreIds");
         String loaiPhim = request.getParameter("loaiPhim");
-        String daoDien = request.getParameter("daoDien");
+        String[] directorIdsParam = request.getParameterValues("directorIds");
         String dienVien = request.getParameter("dienVien");
         String doTuoiGioiHanStr = request.getParameter("doTuoiGioiHan");
         String thoiLuongStr = request.getParameter("thoiLuong");
@@ -143,7 +201,7 @@ public class AdminMovieServlet extends HttpServlet {
         Part posterPart = null;
         try { posterPart = request.getPart("posterFile"); } catch (IllegalStateException ex) {}
 
-        if (tenPhim == null || theLoai == null || loaiPhim == null || daoDien == null || 
+        if (tenPhim == null || loaiPhim == null || 
             dienVien == null || doTuoiGioiHanStr == null || thoiLuongStr == null || 
             noiDung == null || ngayKhoiChieuStr == null || ngonNguPhuDe == null) {
             request.setAttribute("error", "Vui lòng điền đầy đủ thông tin");
@@ -177,9 +235,7 @@ public class AdminMovieServlet extends HttpServlet {
             
             Movie movie = new Movie();
             movie.setTenPhim(tenPhim);
-            movie.setTheLoai(theLoai);
             movie.setLoaiPhim(loaiPhim);
-            movie.setDaoDien(daoDien);
             movie.setDienVien(dienVien);
             movie.setDoTuoiGioiHan(doTuoiGioiHan);
             movie.setThoiLuong(thoiLuong);
@@ -192,6 +248,40 @@ public class AdminMovieServlet extends HttpServlet {
             boolean success = movieDAO.addMovie(movie);
             
             if (success) {
+                // Lưu quan hệ thể loại và đạo diễn
+                GenreDAO genreDAO = new GenreDAO();
+                DirectorDAO directorDAO = new DirectorDAO();
+                java.util.List<Integer> genreIds = new java.util.ArrayList<>();
+                if (genreIdsParam != null) {
+                    for (String s : genreIdsParam) {
+                        try { genreIds.add(Integer.parseInt(s)); } catch (NumberFormatException ignore) {}
+                    }
+                }
+                java.util.List<Integer> directorIds = new java.util.ArrayList<>();
+                if (directorIdsParam != null) {
+                    for (String s : directorIdsParam) {
+                        try { directorIds.add(Integer.parseInt(s)); } catch (NumberFormatException ignore) {}
+                    }
+                }
+                try {
+                    genreDAO.setGenresForMovie(movie.getMaPhim(), genreIds);
+                    directorDAO.setDirectorsForMovie(movie.getMaPhim(), directorIds);
+                } catch (Exception ex) {
+                    // ignore but logable
+                }
+                // Lưu trailer nếu có
+                String linkTrailer = request.getParameter("linkTrailer");
+                String moTaTrailer = request.getParameter("moTaTrailer");
+                
+                if (linkTrailer != null && !linkTrailer.trim().isEmpty()) {
+                    TrailerDAO trailerDAO = new TrailerDAO();
+                    Trailer trailer = new Trailer();
+                    trailer.setMaPhim(movie.getMaPhim());
+                    trailer.setLinkTrailer(linkTrailer.trim());
+                    trailer.setMoTa(moTaTrailer != null ? moTaTrailer.trim() : null);
+                    trailerDAO.addTrailer(trailer);
+                }
+                
                 request.setAttribute("success", "Tạo phim thành công");
             } else {
                 request.setAttribute("error", "Có lỗi xảy ra khi tạo phim");
@@ -211,9 +301,9 @@ public class AdminMovieServlet extends HttpServlet {
             throws ServletException, IOException {
         String maPhimStr = request.getParameter("maPhim");
         String tenPhim = request.getParameter("tenPhim");
-        String theLoai = request.getParameter("theLoai");
+        String[] genreIdsParam = request.getParameterValues("genreIds");
         String loaiPhim = request.getParameter("loaiPhim");
-        String daoDien = request.getParameter("daoDien");
+        String[] directorIdsParam = request.getParameterValues("directorIds");
         String dienVien = request.getParameter("dienVien");
         String doTuoiGioiHanStr = request.getParameter("doTuoiGioiHan");
         String thoiLuongStr = request.getParameter("thoiLuong");
@@ -226,8 +316,8 @@ public class AdminMovieServlet extends HttpServlet {
         Part posterPart = null;
         try { posterPart = request.getPart("posterFile"); } catch (IllegalStateException ex) {}
 
-        if (maPhimStr == null || tenPhim == null || theLoai == null || loaiPhim == null || 
-            daoDien == null || dienVien == null || doTuoiGioiHanStr == null || thoiLuongStr == null || 
+        if (maPhimStr == null || tenPhim == null || loaiPhim == null || 
+            dienVien == null || doTuoiGioiHanStr == null || thoiLuongStr == null || 
             noiDung == null || ngayKhoiChieuStr == null || ngonNguPhuDe == null) {
             request.setAttribute("error", "Vui lòng điền đầy đủ thông tin");
             response.sendRedirect("admin-movies");
@@ -257,9 +347,7 @@ public class AdminMovieServlet extends HttpServlet {
             Movie movie = new Movie();
             movie.setMaPhim(maPhim);
             movie.setTenPhim(tenPhim);
-            movie.setTheLoai(theLoai);
             movie.setLoaiPhim(loaiPhim);
-            movie.setDaoDien(daoDien);
             movie.setDienVien(dienVien);
             movie.setDoTuoiGioiHan(doTuoiGioiHan);
             movie.setThoiLuong(thoiLuong);
@@ -272,6 +360,57 @@ public class AdminMovieServlet extends HttpServlet {
             boolean success = movieDAO.updateMovie(movie);
             
             if (success) {
+                // Cập nhật quan hệ thể loại và đạo diễn
+                GenreDAO genreDAO = new GenreDAO();
+                DirectorDAO directorDAO = new DirectorDAO();
+                java.util.List<Integer> genreIds = new java.util.ArrayList<>();
+                if (genreIdsParam != null) {
+                    for (String s : genreIdsParam) {
+                        try { genreIds.add(Integer.parseInt(s)); } catch (NumberFormatException ignore) {}
+                    }
+                }
+                java.util.List<Integer> directorIds = new java.util.ArrayList<>();
+                if (directorIdsParam != null) {
+                    for (String s : directorIdsParam) {
+                        try { directorIds.add(Integer.parseInt(s)); } catch (NumberFormatException ignore) {}
+                    }
+                }
+                try {
+                    genreDAO.setGenresForMovie(maPhim, genreIds);
+                    directorDAO.setDirectorsForMovie(maPhim, directorIds);
+                } catch (Exception ex) {
+                    // ignore but logable
+                }
+                // Xử lý trailer
+                String linkTrailer = request.getParameter("linkTrailer");
+                String moTaTrailer = request.getParameter("moTaTrailer");
+                
+                TrailerDAO trailerDAO = new TrailerDAO();
+                List<Trailer> existingTrailers = trailerDAO.getTrailersByMovie(maPhim);
+                
+                if (linkTrailer != null && !linkTrailer.trim().isEmpty()) {
+                    // Có link trailer
+                    if (existingTrailers.isEmpty()) {
+                        // Tạo mới trailer
+                        Trailer trailer = new Trailer();
+                        trailer.setMaPhim(maPhim);
+                        trailer.setLinkTrailer(linkTrailer.trim());
+                        trailer.setMoTa(moTaTrailer != null ? moTaTrailer.trim() : null);
+                        trailerDAO.addTrailer(trailer);
+                    } else {
+                        // Cập nhật trailer đầu tiên
+                        Trailer trailer = existingTrailers.get(0);
+                        trailer.setLinkTrailer(linkTrailer.trim());
+                        trailer.setMoTa(moTaTrailer != null ? moTaTrailer.trim() : null);
+                        trailerDAO.updateTrailer(trailer);
+                    }
+                } else {
+                    // Không có link trailer, xóa trailer nếu có
+                    for (Trailer trailer : existingTrailers) {
+                        trailerDAO.deleteTrailer(trailer.getMaTrailer());
+                    }
+                }
+                
                 request.setAttribute("success", "Cập nhật phim thành công");
             } else {
                 request.setAttribute("error", "Có lỗi xảy ra khi cập nhật phim");
@@ -329,7 +468,7 @@ public class AdminMovieServlet extends HttpServlet {
 
     // Thư mục lưu file upload theo yêu cầu
     private String getUploadDir() {
-        return "D:\\JavaProject\\MovieTicketBookingSystem\\web\\assets\\image";
+        return "D:\\JavaProject\\MovieTicketSystem\\MovieTicketBookingSystem\\web\\assets\\image";
     }
 
     // Lưu file lên ổ đĩa, ghi đè nếu tồn tại

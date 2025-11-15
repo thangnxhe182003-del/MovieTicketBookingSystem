@@ -28,8 +28,14 @@
 </jsp:include>
 
 <div class="container">
-    <a href="admin-rooms" class="btn btn-secondary" style="margin-bottom:16px;">← Quay lại danh sách phòng</a>
-    <h2>Phòng: ${room.tenPhong} (Mã: ${room.maPhong})</h2>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <a href="admin-rooms" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <h2 style="margin: 0;">Phòng: ${room.tenPhong} (Mã: ${room.maPhong})</h2>
+        </div>
+    </div>
     
     <c:if test="${not empty param.message}">
         <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 16px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 6px;">
@@ -221,7 +227,7 @@
                         return order[(i+1) % order.length];
                     }
 
-                    let modal, modalClose, modalTitle, f_maGhe, f_hangGhe, f_soGhe, f_loaiGhe, f_trangThai, f_ghiChu, btnDeleteSeat, d_maGhe;
+                    let modal, modalClose, modalTitle, f_maGhe, f_hangGhe, f_soGhe, f_loaiGhe, f_trangThai, f_ghiChu, btnDelete;
                     function ensureModalRefs(){
                         if (modal) return;
                         modal = document.getElementById('seatModal');
@@ -233,12 +239,17 @@
                         f_loaiGhe = document.getElementById('f_loaiGhe');
                         f_trangThai = document.getElementById('f_trangThai');
                         f_ghiChu = document.getElementById('f_ghiChu');
-                        btnDeleteSeat = document.getElementById('btnDeleteSeat');
-                        d_maGhe = document.getElementById('d_maGhe');
+                        btnDelete = document.getElementById('btnDelete');
                         if (!modal) return;
                         modalClose.onclick = function(){ modal.style.display = 'none'; };
                         modal.onclick = function(e){ if (e.target === modal) modal.style.display = 'none'; };
-                        btnDeleteSeat.onclick = function(){ document.getElementById('deleteForm').submit(); };
+                        // Nút "Xóa mềm" - Chỉ cập nhật trạng thái thành "Bảo trì"
+                        btnDelete.onclick = function(){
+                            if (confirm('Đặt ghế này vào trạng thái bảo trì (xóa mềm)?')) {
+                                f_trangThai.value = 'Bảo trì';
+                                document.getElementById('seatForm').submit();
+                            }
+                        };
                     }
 
                     function openSeatModal(data, code, isCreate){
@@ -249,20 +260,22 @@
                         f_maGhe.value = data.maGhe || '';
                         f_hangGhe.value = data.row;
                         f_soGhe.value = data.col;
+                        // Set giá trị cho hidden input để submit
+                        document.getElementById('f_hangGhe_hidden').value = data.row;
+                        document.getElementById('f_soGhe_hidden').value = data.col;
                         f_loaiGhe.value = data.loai || 'Thuong';
                         f_trangThai.value = data.trangThai || 'Có sẵn';
                         f_ghiChu.value = '';
-                        d_maGhe.value = data.maGhe || '';
                         // Đổi action form giữa updateSeat và addSeat
                         var form = document.getElementById('seatForm');
                         if (isCreate) {
                             form.action = 'admin-rooms';
                             form.querySelector('input[name="action"]').value = 'addSeat';
-                            btnDeleteSeat.style.display = 'none';
+                            btnDelete.style.display = 'none';
                         } else {
                             form.action = 'admin-rooms';
                             form.querySelector('input[name="action"]').value = 'updateSeat';
-                            btnDeleteSeat.style.display = '';
+                            btnDelete.style.display = '';
                         }
                     }
                 })();
@@ -282,13 +295,15 @@
                     <input type="hidden" name="action" value="updateSeat" />
                     <input type="hidden" name="maGhe" id="f_maGhe" />
                     <input type="hidden" name="maPhong" value="${room.maPhong}" />
+                    <input type="hidden" name="hangGhe" id="f_hangGhe_hidden" />
+                    <input type="hidden" name="soGhe" id="f_soGhe_hidden" />
                     <div>
                         <label>Hàng ghế</label>
-                        <input id="f_hangGhe" name="hangGhe" readonly disabled style="background:#f8f9fa; color:#6c757d;" />
+                        <input id="f_hangGhe" readonly disabled style="background:#f8f9fa; color:#6c757d;" />
                     </div>
                     <div>
                         <label>Số ghế</label>
-                        <input id="f_soGhe" name="soGhe" readonly disabled style="background:#f8f9fa; color:#6c757d;" />
+                        <input id="f_soGhe" readonly disabled style="background:#f8f9fa; color:#6c757d;" />
                     </div>
                     <div>
                         <label>Loại ghế</label>
@@ -310,15 +325,14 @@
                         <label>Ghi chú</label>
                         <input id="f_ghiChu" name="ghiChu" />
                     </div>
-                    <div class="full" style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end; margin-top:6px;">
-                        <button type="button" id="btnDeleteSeat" class="btn btn-danger btn-sm">Xóa</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
+                    <div class="full" style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+                        <button type="button" id="btnDelete" class="btn btn-danger btn-sm">
+                            <i class="fas fa-ban"></i> Xóa mềm (Bảo trì)
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Lưu
+                        </button>
                     </div>
-                </form>
-                <form id="deleteForm" action="admin-rooms" method="POST" style="display:none;">
-                    <input type="hidden" name="action" value="deleteSeat" />
-                    <input type="hidden" name="maGhe" id="d_maGhe" />
-                    <input type="hidden" name="maPhong" value="${room.maPhong}" />
                 </form>
             </div>
         </div>

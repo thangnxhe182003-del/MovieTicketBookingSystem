@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <jsp:include page="../layout/header.jsp">
     <jsp:param name="pageTitle" value="Chọn suất chiếu"/>
     <jsp:param name="extraStyles" value="
@@ -37,34 +38,92 @@
             </div>
         </div>
 
+        <!-- Filter Section -->
+        <div style="background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.1);">
+            <form method="GET" action="showtime-selection" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <input type="hidden" name="maPhim" value="${movie.maPhim}">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; font-weight: 600; color: #333; margin-bottom: 8px; font-size: 14px;">
+                        <i class="fas fa-building"></i> Rạp chiếu
+                    </label>
+                    <select name="cinema" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; background: #fff;">
+                        <option value="">Tất cả rạp</option>
+                        <c:forEach var="cinemaName" items="${cinemaNames}">
+                            <option value="${cinemaName}" ${cinemaName == selectedCinema ? 'selected' : ''}>${cinemaName}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; font-weight: 600; color: #333; margin-bottom: 8px; font-size: 14px;">
+                        <i class="fas fa-calendar-alt"></i> Ngày chiếu
+                    </label>
+                    <input type="date" 
+                           name="date" 
+                           value="${selectedDate}" 
+                           min="<%= java.time.LocalDate.now().toString() %>"
+                           style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; background: #fff;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="background: #e50914; color: #fff; padding: 10px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                        <i class="fas fa-search"></i> Lọc
+                    </button>
+                    <a href="showtime-selection?maPhim=${movie.maPhim}" 
+                       style="background: #f0f0f0; color: #333; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; white-space: nowrap;">
+                        <i class="fas fa-redo"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
         <!-- Showtime Selection -->
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
             <a href="movie?action=detail&maPhim=${movie.maPhim}" style="color: #e50914; text-decoration: none; font-weight: 600;">← Quay lại</a>
             <h2 style="margin: 0; color: #333;">Chọn suất chiếu</h2>
         </div>
-        <form id="showtimeForm" method="post" action="showtime-selection">
+        <form id="showtimeForm" method="post" action="booking?action=selectSeats">
             <input type="hidden" name="maPhim" value="${movie.maPhim}">
             <input type="hidden" name="maSuatChieu" id="selectedShowtime" value="">
             
-            <c:forEach var="dateEntry" items="${showtimesByDate}">
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
-                        ${dateEntry.key}
-                    </h3>
-                    <div class="showtime-grid">
-                        <c:forEach var="showtime" items="${dateEntry.value}">
-                            <div class="showtime-card" onclick="selectShowtime(${showtime.maSuatChieu})">
-                                <div class="showtime-time">
-                                    ${showtime.gioBatDau.format(timeFormatter)} - ${showtime.gioKetThuc.format(timeFormatter)}
-                                </div>
-                                <div class="showtime-room">${showtime.tenRap} - Phòng ${showtime.tenPhong}</div>
-                                <div class="showtime-language">${showtime.ngonNguAmThanh}</div>
-<!--                                <div class="showtime-price">${showtime.giaVeCoSo} VNĐ</div>-->
-                            </div>
-                        </c:forEach>
+            <c:choose>
+                <c:when test="${empty showtimesByDate}">
+                    <div style="text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.1);">
+                        <i class="fas fa-calendar-times" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666; margin-bottom: 10px;">Không có suất chiếu nào</h3>
+                        <p style="color: #999; margin-bottom: 20px;">Vui lòng thử chọn rạp hoặc ngày khác</p>
+                        <a href="showtime-selection?maPhim=${movie.maPhim}" style="display: inline-block; background: #e50914; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-redo"></i> Xóa bộ lọc
+                        </a>
                     </div>
-                </div>
-            </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach var="dateEntry" items="${showtimesByDate}">
+                        <div style="margin-bottom: 30px;">
+                            <h3 style="color: #333; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                ${dateEntry.key}
+                            </h3>
+                            <div class="showtime-grid">
+                                <c:forEach var="showtime" items="${dateEntry.value}">
+                                    <div class="showtime-card" onclick="selectShowtime(${showtime.maSuatChieu}, event)">
+                                        <div class="showtime-time">
+                                            <c:if test="${showtime.gioBatDau != null}">
+                                                ${showtime.gioBatDau.format(timeFormatter)}
+                                            </c:if>
+                                            <c:if test="${showtime.gioKetThuc != null}">
+                                                 - ${showtime.gioKetThuc.format(timeFormatter)}
+                                            </c:if>
+                                        </div>
+                                        <div class="showtime-room">${showtime.tenRap} - Phòng ${showtime.tenPhong}</div>
+                                        <div class="showtime-language">${showtime.ngonNguAmThanh}</div>
+                                        <div class="showtime-price">
+                                            <fmt:formatNumber value="${showtime.giaVeCoSo}" pattern="#,###"/>đ
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
             
             <button type="submit" class="btn-continue" id="continueBtn" disabled>Tiếp tục</button>
         </form>
@@ -72,7 +131,7 @@
 </div>
 
 <script>
-    function selectShowtime(maSuatChieu) {
+    function selectShowtime(maSuatChieu, event) {
         // Remove previous selection
         document.querySelectorAll('.showtime-card').forEach(card => {
             card.classList.remove('selected');

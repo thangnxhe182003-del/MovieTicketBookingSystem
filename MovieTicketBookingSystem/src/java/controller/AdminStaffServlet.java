@@ -16,6 +16,8 @@ public class AdminStaffServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Admin mới được truy cập
+        if (!util.RoleChecker.requireAdmin(request, response)) return;
         
         String action = request.getParameter("action");
         if (action == null) action = "list";
@@ -49,6 +51,8 @@ public class AdminStaffServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Admin mới được truy cập
+        if (!util.RoleChecker.requireAdmin(request, response)) return;
         
         String action = request.getParameter("action");
         StaffDAO staffDAO = new StaffDAO();

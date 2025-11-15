@@ -36,28 +36,60 @@ public class ShowtimeSuggestionService {
         List<Showtime> existingShowtimes = showtimeDAO.getShowtimesByRoomAndDate(maPhong, ngayChieu);
         
         // Debug: In ra thông tin suất chiếu hiện có
-        System.out.println("Debug - Số suất chiếu hiện có: " + existingShowtimes.size());
-        for (Showtime s : existingShowtimes) {
-            System.out.println("Debug - Suất chiếu: " + s.getGioBatDau() + " - " + s.getGioKetThuc());
+        System.out.println("=== KIỂM TRA SUẤT CHIẾU HIỆN CÓ TRONG DATABASE ===");
+        System.out.println("Phòng: " + maPhong + ", Ngày: " + ngayChieu);
+        System.out.println("Số suất chiếu hiện có: " + existingShowtimes.size());
+        
+        if (existingShowtimes.isEmpty()) {
+            System.out.println(">>> NGÀY TRỐNG - Không có suất chiếu nào");
+        } else {
+            System.out.println(">>> ĐÃ CÓ SUẤT CHIẾU - Danh sách:");
+            for (int i = 0; i < existingShowtimes.size(); i++) {
+                Showtime s = existingShowtimes.get(i);
+                System.out.println("  Suất #" + (i+1) + ": " + 
+                    s.getGioBatDau().toLocalTime() + " - " + s.getGioKetThuc().toLocalTime() + 
+                    " (Ngày: " + s.getNgayChieu().toLocalDate() + ")");
+            }
         }
+        System.out.println("================================================");
+        System.out.println();
         
         // Tìm các khoảng trống có thể chứa phim mới
         List<TimeSlot> availableSlots = findAvailableSlotsForMovie(existingShowtimes, movie.getThoiLuong());
         
-        // Debug: In ra các khoảng trống tìm được
-        System.out.println("Debug - Số khoảng trống tìm được: " + availableSlots.size());
-        for (TimeSlot slot : availableSlots) {
-            System.out.println("Debug - Khoảng trống: " + slot.getStartTime() + " - " + slot.getEndTime());
+        System.out.println("=== KHOẢNG TRỐNG TÌM ĐƯỢC ===");
+        System.out.println("Số khoảng trống: " + availableSlots.size());
+        for (int i = 0; i < availableSlots.size(); i++) {
+            TimeSlot slot = availableSlots.get(i);
+            System.out.println("  Khoảng trống #" + (i+1) + ": " + slot.getStartTime() + " - " + slot.getEndTime());
         }
+        System.out.println("==============================");
+        System.out.println();
         
         // Tạo đề xuất cho từng khoảng trống
+        // LUÔN TẠO NHIỀU SUẤT CHIẾU trong mỗi khoảng trống
+        System.out.println(">>> TẠO ĐỀ XUẤT - Nhiều suất chiếu cho mỗi khoảng trống");
         for (TimeSlot slot : availableSlots) {
-            List<TimeSlot> movieSlots = generateMovieSlotsInRange(slot.getStartTime(), slot.getEndTime(), movie.getThoiLuong());
+            List<TimeSlot> movieSlots = generateMultipleSlotsInRange(slot.getStartTime(), slot.getEndTime(), movie.getThoiLuong());
             suggestions.addAll(movieSlots);
         }
         
         // Loại bỏ các suất chiếu trùng lặp
         suggestions = removeOverlappingSlots(suggestions);
+        
+        // LỌC BỎ TẤT CẢ SUẤT CHIẾU NGOÀI KHUNG GIỜ 9H-23H
+        List<TimeSlot> validSuggestions = new ArrayList<>();
+        for (TimeSlot slot : suggestions) {
+            // Chỉ giữ lại suất chiếu bắt đầu >= 9h và kết thúc <= 23h
+            if (!slot.getStartTime().isBefore(EARLIEST_SHOWTIME) && 
+                !slot.getEndTime().isAfter(LATEST_SHOWTIME)) {
+                validSuggestions.add(slot);
+            } else {
+                System.out.println("Debug - Loại bỏ suất chiếu ngoài khung giờ: " + 
+                                 slot.getStartTime() + " - " + slot.getEndTime());
+            }
+        }
+        suggestions = validSuggestions;
         
         // Nếu không có khoảng trống nào, tạo đề xuất từ 9h sáng
         if (suggestions.isEmpty()) {
@@ -88,7 +120,7 @@ public class ShowtimeSuggestionService {
         
         // Tạo đề xuất cho từng khoảng trống
         for (TimeSlot slot : availableSlots) {
-            List<TimeSlot> movieSlots = generateMovieSlotsInRange(slot.getStartTime(), slot.getEndTime(), movie.getThoiLuong());
+            List<TimeSlot> movieSlots = generateMultipleSlotsInRange(slot.getStartTime(), slot.getEndTime(), movie.getThoiLuong());
             suggestions.addAll(movieSlots);
         }
         
@@ -182,10 +214,18 @@ public class ShowtimeSuggestionService {
             LocalTime gapStart = EARLIEST_SHOWTIME;
             LocalTime gapEnd = firstStartTime;
             
-            // Kiểm tra xem khoảng trống có đủ lớn cho phim không
-            if (gapEnd.isAfter(gapStart.plusMinutes(movieDuration + CLEANUP_TIME))) {
+            // Tính khoảng cách (phút)
+            long availableMinutes = java.time.Duration.between(gapStart, gapEnd).toMinutes();
+            
+            System.out.println("Debug - Kiểm tra khoảng trống đầu ngày: " + gapStart + " - " + gapEnd + 
+                             " (Có: " + availableMinutes + " phút, Phim cần: " + movieDuration + " phút)");
+            
+            // Điều kiện: Khoảng trống >= thời lượng phim
+            if (availableMinutes >= movieDuration) {
                 availableSlots.add(new TimeSlot(gapStart, gapEnd, true));
-                System.out.println("Debug - Khoảng trống đầu ngày: " + gapStart + " - " + gapEnd);
+                System.out.println("Debug - ✓ Khoảng trống đầu ngày PHÙ HỢP");
+            } else {
+                System.out.println("Debug - ✗ Khoảng trống đầu ngày KHÔNG ĐỦ");
             }
         }
         
@@ -197,14 +237,25 @@ public class ShowtimeSuggestionService {
             LocalTime currentEndTime = currentShowtime.getGioKetThuc().toLocalTime();
             LocalTime nextStartTime = nextShowtime.getGioBatDau().toLocalTime();
             
+            // Tính khoảng cách TOÀN BỘ giữa 2 suất (phút)
+            long totalGapMinutes = java.time.Duration.between(currentEndTime, nextStartTime).toMinutes();
+            
             // Thời gian bắt đầu khoảng trống (sau suất chiếu hiện tại + 30 phút dọn dẹp)
             LocalTime gapStart = currentEndTime.plusMinutes(CLEANUP_TIME);
             LocalTime gapEnd = nextStartTime;
             
-            // Kiểm tra xem khoảng trống có đủ lớn cho phim không
-            if (gapEnd.isAfter(gapStart.plusMinutes(movieDuration + CLEANUP_TIME))) {
+            // Tính khoảng cách SAU KHI TRỪ 30 PHÚT DỌN DẸP (phút)
+            long availableMinutes = java.time.Duration.between(gapStart, gapEnd).toMinutes();
+            
+            System.out.println("Debug - Kiểm tra khoảng trống giữa: " + currentEndTime + " - " + nextStartTime + 
+                             " (Toàn bộ: " + totalGapMinutes + " phút, Sau trừ 30p dọn dẹp: " + availableMinutes + " phút, Phim cần: " + movieDuration + " phút)");
+            
+            // Điều kiện: Khoảng trống sau khi trừ 30 phút dọn dẹp >= thời lượng phim
+            if (availableMinutes >= movieDuration) {
                 availableSlots.add(new TimeSlot(gapStart, gapEnd, true));
-                System.out.println("Debug - Khoảng trống giữa: " + gapStart + " - " + gapEnd);
+                System.out.println("Debug - ✓ Khoảng trống giữa PHÙ HỢP");
+            } else {
+                System.out.println("Debug - ✗ Khoảng trống giữa KHÔNG ĐỦ");
             }
         }
         
@@ -222,13 +273,22 @@ public class ShowtimeSuggestionService {
             // Suất chiếu sang ngày mới, không tìm khoảng trống sau nó
             System.out.println("Debug - Suất chiếu cuối sang ngày mới (" + lastStartTime + " - " + lastEndTime + "), bỏ qua khoảng trống sau");
         } else if (lastEndTime.isBefore(LATEST_SHOWTIME)) {
+            // Thời gian bắt đầu khoảng trống (sau suất chiếu cuối + 30 phút dọn dẹp)
             LocalTime gapStart = lastEndTime.plusMinutes(CLEANUP_TIME);
             LocalTime gapEnd = LATEST_SHOWTIME;
             
-            // Kiểm tra xem khoảng trống có đủ lớn cho phim không
-            if (gapEnd.isAfter(gapStart.plusMinutes(movieDuration + CLEANUP_TIME))) {
+            // Tính khoảng cách SAU KHI TRỪ 30 PHÚT DỌN DẸP (phút)
+            long availableMinutes = java.time.Duration.between(gapStart, gapEnd).toMinutes();
+            
+            System.out.println("Debug - Kiểm tra khoảng trống cuối ngày: " + gapStart + " - " + gapEnd + 
+                             " (Có: " + availableMinutes + " phút, Phim cần: " + movieDuration + " phút)");
+            
+            // Điều kiện: Khoảng trống sau khi trừ 30 phút dọn dẹp >= thời lượng phim
+            if (availableMinutes >= movieDuration) {
                 availableSlots.add(new TimeSlot(gapStart, gapEnd, true));
-                System.out.println("Debug - Khoảng trống cuối ngày: " + gapStart + " - " + gapEnd);
+                System.out.println("Debug - ✓ Khoảng trống cuối ngày PHÙ HỢP");
+            } else {
+                System.out.println("Debug - ✗ Khoảng trống cuối ngày KHÔNG ĐỦ");
             }
         }
         
@@ -244,48 +304,64 @@ public class ShowtimeSuggestionService {
     }
     
     /**
-     * Tạo nhiều suất chiếu trong khoảng thời gian trống (cách nhau 30 phút dọn dẹp)
+     * Tạo NHIỀU suất chiếu trong khoảng trống (cho ngày trống)
+     * Ví dụ: 9h-23h -> Tạo 9:00-11:08, 11:38-13:46, 14:16-16:24, ...
      */
-    private List<TimeSlot> generateMovieSlotsInRange(LocalTime startTime, LocalTime endTime, int movieDuration) {
+    private List<TimeSlot> generateMultipleSlotsInRange(LocalTime startTime, LocalTime endTime, int movieDuration) {
         List<TimeSlot> slots = new ArrayList<>();
         
-        // Debug: In ra thông tin khoảng trống
-        System.out.println("Debug - Khoảng trống: " + startTime + " - " + endTime + ", Thời lượng: " + movieDuration + " phút");
+        // Đảm bảo startTime >= 9h
+        LocalTime currentTime = startTime.isBefore(EARLIEST_SHOWTIME) ? EARLIEST_SHOWTIME : startTime;
         
-        LocalTime currentTime = startTime;
+        // Đảm bảo endTime <= 23h
+        LocalTime effectiveEndTime = endTime.isAfter(LATEST_SHOWTIME) ? LATEST_SHOWTIME : endTime;
+        
+        System.out.println("  >> Tạo nhiều suất trong khoảng: " + currentTime + " - " + effectiveEndTime);
+        
         int slotNumber = 0;
+        int maxSlots = 10; // Giới hạn tối đa để tránh vòng lặp vô tận
         
-        // Tạo các suất chiếu trong khoảng trống, cách nhau 30 phút dọn dẹp
-        while (currentTime.isBefore(endTime)) {
-            LocalTime slotEndTime = currentTime.plusMinutes(movieDuration);
-            
-            // Kiểm tra xem có thể tạo suất chiếu trong khoảng trống không
-            if (slotEndTime.isBefore(endTime) || slotEndTime.equals(endTime)) {
-                slots.add(new TimeSlot(currentTime, slotEndTime, true));
-                System.out.println("Debug - Tạo suất chiếu #" + (slotNumber + 1) + ": " + currentTime + " - " + slotEndTime);
-                
-                // Chuyển sang suất chiếu tiếp theo (cách nhau 30 phút dọn dẹp)
-                LocalTime nextStartTime = slotEndTime.plusMinutes(CLEANUP_TIME);
-                
-                // Kiểm tra xem có thể tạo suất chiếu tiếp theo không
-                if (nextStartTime.isAfter(endTime) || nextStartTime.equals(endTime)) {
-                    System.out.println("Debug - Không đủ thời gian cho suất chiếu tiếp theo");
-                    break;
-                }
-                
-                currentTime = nextStartTime;
-                slotNumber++;
-            } else {
-                // Vượt quá khoảng trống, dừng lại
-                System.out.println("Debug - Vượt quá khoảng trống, dừng lại");
+        // Tạo các suất chiếu, mỗi suất cách nhau (thời lượng phim + 30 phút)
+        while (slotNumber < maxSlots) {
+            // KIỂM TRA 1: Đảm bảo currentTime vẫn trong khung giờ hợp lệ
+            if (currentTime.isAfter(effectiveEndTime) || currentTime.equals(effectiveEndTime)) {
+                System.out.println("  >> Dừng: Đã hết khoảng trống");
                 break;
             }
+            
+            LocalTime slotEndTime = currentTime.plusMinutes(movieDuration);
+            
+            // KIỂM TRA 2: Suất chiếu có qua nửa đêm không
+            if (slotEndTime.isBefore(currentTime)) {
+                System.out.println("  >> Dừng: Suất chiếu qua nửa đêm (" + currentTime + " - " + slotEndTime + ")");
+                break;
+            }
+            
+            // KIỂM TRA 3: Suất chiếu có kết thúc sau 23h không
+            if (slotEndTime.isAfter(LATEST_SHOWTIME)) {
+                System.out.println("  >> Dừng: Suất chiếu sẽ kết thúc sau 23h (" + currentTime + " - " + slotEndTime + ")");
+                break;
+            }
+            
+            // KIỂM TRA 4: Suất chiếu có vượt quá khoảng trống không (QUAN TRỌNG!)
+            if (slotEndTime.isAfter(effectiveEndTime)) {
+                System.out.println("  >> Dừng: Suất chiếu vượt quá khoảng trống (" + currentTime + " - " + slotEndTime + " > " + effectiveEndTime + ")");
+                break;
+            }
+            
+            // Thêm suất chiếu hợp lệ
+            slots.add(new TimeSlot(currentTime, slotEndTime, true));
+            slotNumber++;
+            System.out.println("  >> Đề xuất #" + slotNumber + ": " + currentTime + " - " + slotEndTime);
+            
+            // Chuyển sang suất chiếu tiếp theo (kết thúc + 30 phút dọn dẹp)
+            currentTime = slotEndTime.plusMinutes(CLEANUP_TIME);
         }
         
-        System.out.println("Debug - Tổng số suất chiếu tạo được: " + slots.size());
-        
+        System.out.println("  >> Tổng: " + slots.size() + " suất chiếu");
         return slots;
     }
+
     
     
     /**

@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,12 @@ public class SeatSelectionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+            Customer logged = (Customer) session.getAttribute("loggedInUser");
+            if (logged == null) {
+                response.sendRedirect("login");
+                return;
+            }
         String maPhimStr = request.getParameter("maPhim");
         String maSuatChieuStr = request.getParameter("maSuatChieu");
         
@@ -98,6 +105,12 @@ public class SeatSelectionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+            Customer logged = (Customer) session.getAttribute("loggedInUser");
+            if (logged == null) {
+                response.sendRedirect("login");
+                return;
+            }
         String maPhim = request.getParameter("maPhim");
         String maSuatChieu = request.getParameter("maSuatChieu");
         String selectedSeats = request.getParameter("selectedSeats");

@@ -13,12 +13,15 @@ import java.util.List;
 import model.Cinema;
 import model.Room;
 import model.Seat;
+import util.RoleChecker;
 
 public class AdminRoomServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Admin mới được truy cập
+        if (!RoleChecker.requireAdmin(request, response)) return;
         String action = request.getParameter("action");
         if (action == null) action = "list";
 
@@ -74,6 +77,9 @@ public class AdminRoomServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Admin mới được truy cập
+        if (!RoleChecker.requireAdmin(request, response)) return;
+        
         String action = request.getParameter("action");
         if (action == null) {
             response.sendRedirect("admin-rooms");

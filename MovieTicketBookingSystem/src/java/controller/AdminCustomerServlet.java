@@ -15,6 +15,8 @@ public class AdminCustomerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Admin mới được truy cập
+        if (!util.RoleChecker.requireAdmin(request, response)) return;
         
         String action = request.getParameter("action");
         if (action == null) action = "list";
@@ -48,6 +50,8 @@ public class AdminCustomerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Chỉ Admin mới được truy cập
+        if (!util.RoleChecker.requireAdmin(request, response)) return;
         
         String action = request.getParameter("action");
         CustomerDAO customerDAO = new CustomerDAO();

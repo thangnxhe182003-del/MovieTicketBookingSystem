@@ -160,6 +160,24 @@ public class MovieController extends HttpServlet {
             request.setAttribute("ratingCount", ratingCount);
             request.setAttribute("products", products);
 
+            // Load Genre/Director cho button filter
+            dal.GenreDAO genreDAO = new dal.GenreDAO();
+            dal.DirectorDAO directorDAO = new dal.DirectorDAO();
+            java.util.List<Integer> gids = genreDAO.getGenreIdsByMovie(maPhim);
+            java.util.List<model.Genre> gs = new java.util.ArrayList<>();
+            for (Integer id : gids) {
+                model.Genre g = genreDAO.getById(id);
+                if (g != null) gs.add(g);
+            }
+            java.util.List<Integer> dids = directorDAO.getDirectorIdsByMovie(maPhim);
+            java.util.List<model.Director> ds = new java.util.ArrayList<>();
+            for (Integer id : dids) {
+                model.Director d = directorDAO.getById(id);
+                if (d != null) ds.add(d);
+            }
+            request.setAttribute("genres", gs);
+            request.setAttribute("directors", ds);
+
             request.getRequestDispatcher("Views/common/movieDetail.jsp").forward(request, response);
         } catch (NumberFormatException e) {
             if (!response.isCommitted()) {

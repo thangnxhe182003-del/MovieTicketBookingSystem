@@ -16,6 +16,8 @@ public class Showtime implements Serializable {
     private LocalDateTime gioBatDau;
     private LocalDateTime gioKetThuc;
     private BigDecimal giaVeCoSo;
+    private BigDecimal giaVeTreEm;
+    private BigDecimal vat;
     private String ngonNguAmThanh;
 
     // Additional fields for displaying
@@ -119,6 +121,22 @@ public class Showtime implements Serializable {
 
     public void setGiaVeCoSo(BigDecimal giaVeCoSo) {
         this.giaVeCoSo = giaVeCoSo;
+    }
+
+    public BigDecimal getGiaVeTreEm() {
+        return giaVeTreEm;
+    }
+
+    public void setGiaVeTreEm(BigDecimal giaVeTreEm) {
+        this.giaVeTreEm = giaVeTreEm;
+    }
+
+    public BigDecimal getVat() {
+        return vat;
+    }
+
+    public void setVat(BigDecimal vat) {
+        this.vat = vat;
     }
 
     public String getNgonNguAmThanh() {

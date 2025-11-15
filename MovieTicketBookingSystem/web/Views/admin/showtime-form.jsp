@@ -108,8 +108,24 @@
                         <div class="form-group">
                             <label for="giaVeCoSo">Giá vé cơ sở <span>*</span></label>
                             <input type="number" id="giaVeCoSo" name="giaVeCoSo" 
-                                   value="${showtime != null ? showtime.giaVeCoSo : '50000'}" 
+                                   value="${showtime != null ? showtime.giaVeCoSo : '75000'}" 
                                    min="0" step="1000" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="giaVeTreEm">Giá vé trẻ em</label>
+                            <input type="number" id="giaVeTreEm" name="giaVeTreEm"
+                                   value="${showtime != null && showtime.giaVeTreEm != null ? showtime.giaVeTreEm : '50000'}"
+                                   min="0" step="1000" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vat">VAT (%)</label>
+                            <input type="number" id="vat" name="vat"
+                                   value="${showtime != null && showtime.vat != null ? showtime.vat : '10.00'}"
+                                   min="0" max="100" step="0.01" />
                         </div>
                     </div>
 
@@ -186,6 +202,8 @@
         const ngayChieu = document.getElementById('ngayChieu').value;
         const giaVeCoSo = document.getElementById('giaVeCoSo').value;
         const ngonNguAmThanh = document.getElementById('ngonNguAmThanh').value;
+        const giaVeTreEm = document.getElementById('giaVeTreEm') ? document.getElementById('giaVeTreEm').value : '';
+        const vat = document.getElementById('vat') ? document.getElementById('vat').value : '';
         
         // Debug: In ra các giá trị
         console.log('Debug - maPhim:', maPhim);
@@ -193,6 +211,8 @@
         console.log('Debug - ngayChieu:', ngayChieu);
         console.log('Debug - giaVeCoSo:', giaVeCoSo);
         console.log('Debug - ngonNguAmThanh:', ngonNguAmThanh);
+        console.log('Debug - giaVeTreEm:', giaVeTreEm);
+        console.log('Debug - vat:', vat);
         
         if (!maPhim || !maPhong || !ngayChieu) {
             alert('Vui lòng chọn phim, phòng và ngày chiếu trước khi đề xuất');
@@ -200,7 +220,16 @@
         }
         
         // Redirect to suggestion page
-        window.location.href = 'admin-showtimes?action=suggest&maPhim=' + maPhim + '&maPhong=' + maPhong + '&ngayChieu=' + ngayChieu + '&giaVeCoSo=' + giaVeCoSo + '&ngonNguAmThanh=' + encodeURIComponent(ngonNguAmThanh);
+        const url = new URL(window.location.origin + window.location.pathname.replace(/[^/]+$/, '') + 'admin-showtimes');
+        url.searchParams.set('action', 'suggest');
+        url.searchParams.set('maPhim', maPhim);
+        url.searchParams.set('maPhong', maPhong);
+        url.searchParams.set('ngayChieu', ngayChieu);
+        url.searchParams.set('giaVeCoSo', giaVeCoSo);
+        url.searchParams.set('ngonNguAmThanh', ngonNguAmThanh);
+        if (giaVeTreEm) url.searchParams.set('giaVeTreEm', giaVeTreEm);
+        if (vat) url.searchParams.set('vat', vat);
+        window.location.href = url.toString();
     }
 </script>
 

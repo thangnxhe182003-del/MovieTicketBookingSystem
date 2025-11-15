@@ -16,6 +16,29 @@ public class Ticket {
     private LocalDateTime thoiGianTao;
     private LocalDateTime thoiGianCapNhat;
     private String ghiChu;
+    private int maOrder;
+
+    public Ticket(int maVe, int maSuatChieu, int maGhe, String loaiGhe, BigDecimal giaVe, String trangThai, LocalDateTime thoiGianTao, LocalDateTime thoiGianCapNhat, String ghiChu, int maOrder) {
+        this.maVe = maVe;
+        this.maSuatChieu = maSuatChieu;
+        this.maGhe = maGhe;
+        this.loaiGhe = loaiGhe;
+        this.giaVe = giaVe;
+        this.trangThai = trangThai;
+        this.thoiGianTao = thoiGianTao;
+        this.thoiGianCapNhat = thoiGianCapNhat;
+        this.ghiChu = ghiChu;
+        this.maOrder = maOrder;
+    }
+
+    public int getMaOrder() {
+        return maOrder;
+    }
+
+    public void setMaOrder(int maOrder) {
+        this.maOrder = maOrder;
+    }
+    
     
     // Constructors
     public Ticket() {}

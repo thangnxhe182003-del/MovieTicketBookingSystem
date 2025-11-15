@@ -142,6 +142,40 @@
             .full-width {
                 grid-column: 1 / -1;
             }
+
+            /* Checkbox options layout */
+            .options-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+            .option-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 12px;
+                border: 1px solid #e9ecef;
+                border-radius: 6px;
+                background: #fff;
+            }
+            .option-item:hover {
+                border-color: #e50914;
+                box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.08);
+            }
+            .option-item input[type='checkbox'] {
+                width: 16px;
+                height: 16px;
+                accent-color: #e50914;
+            }
+            .option-item span {
+                font-size: 14px;
+                color: #333;
+            }
+            @media (max-width: 768px) {
+                .options-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
         </style>
     "/>
 </jsp:include>
@@ -178,13 +212,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="theLoai">Thể loại <span class="required">*</span></label>
-                        <input type="text" 
-                               id="theLoai" 
-                               name="theLoai" 
-                               value="${movie != null ? movie.theLoai : ''}"
-                               placeholder="Nhập thể loại (ví dụ: Hành động, Hài, Kinh dị...)"
-                               required>
+                        <label>Thể loại <span class="required">*</span></label>
+                        <div class="options-grid">
+                            <c:forEach var="g" items="${allGenres}">
+                                <label class="option-item">
+                                    <input type="checkbox" name="genreIds" value="${g.maTheLoai}"
+                                           ${selectedGenreIds != null && selectedGenreIds.contains(g.maTheLoai) ? 'checked' : ''}>
+                                    <span>${g.tenTheLoai}</span>
+                                </label>
+                            </c:forEach>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -199,13 +236,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="daoDien">Đạo diễn <span class="required">*</span></label>
-                        <input type="text" 
-                               id="daoDien" 
-                               name="daoDien" 
-                               value="${movie != null ? movie.daoDien : ''}"
-                               placeholder="Nhập tên đạo diễn"
-                               required>
+                        <label>Đạo diễn <span class="required">*</span></label>
+                        <div class="options-grid">
+                            <c:forEach var="d" items="${allDirectors}">
+                                <label class="option-item">
+                                    <input type="checkbox" name="directorIds" value="${d.maDaoDien}"
+                                           ${selectedDirectorIds != null && selectedDirectorIds.contains(d.maDaoDien) ? 'checked' : ''}>
+                                    <span>${d.tenDaoDien}</span>
+                                </label>
+                            </c:forEach>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -250,7 +290,7 @@
                         <input type="date" 
                                id="ngayKhoiChieu" 
                                name="ngayKhoiChieu" 
-                               value="${movie != null ? movie.ngayKhoiChieu : ''}"
+                               value="${ngayKhoiChieuFormatted != null ? ngayKhoiChieuFormatted : ''}"
                                required>
                     </div>
 
@@ -294,9 +334,28 @@
                         <label>Xem trước poster</label>
                         <img id="posterPreview" 
                              class="poster-preview" 
-                             src="${movie != null ? pageContext.request.contextPath.concat('/assets/image/').concat(movie.poster) : 'https://via.placeholder.com/150x200?text=No+Image'}"
+                             src="${movie != null && movie.poster != null && !movie.poster.isEmpty() ? pageContext.request.contextPath.concat('/assets/image/').concat(movie.poster) : ''}"
                              alt="Preview"
-                             onerror="this.src='https://via.placeholder.com/150x200?text=No+Image'">
+                             style="${movie == null || movie.poster == null || movie.poster.isEmpty() ? 'display: none;' : ''}"
+                             onerror="this.style.display='none';">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="linkTrailer">Link Trailer</label>
+                        <input type="url" 
+                               id="linkTrailer" 
+                               name="linkTrailer" 
+                               value="${trailer != null ? trailer.linkTrailer : ''}"
+                               placeholder="Nhập link YouTube hoặc video (ví dụ: https://www.youtube.com/watch?v=...)">
+                        <div class="help-text">Link trailer từ YouTube hoặc video khác</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="moTaTrailer">Mô tả trailer</label>
+                        <textarea id="moTaTrailer" 
+                                  name="moTaTrailer" 
+                                  placeholder="Nhập mô tả ngắn về trailer (tùy chọn)"
+                                  rows="3">${trailer != null ? trailer.moTa : ''}</textarea>
                     </div>
                 </div>
             </div>
@@ -336,18 +395,23 @@
             
             reader.onload = function(e) {
                 preview.src = e.target.result;
+                preview.style.display = 'block';
             };
             
             reader.readAsDataURL(input.files[0]);
+        } else {
+            // Nếu không có file, ẩn preview
+            preview.style.display = 'none';
         }
     }
+    
 
     // Form validation
     document.getElementById('movieForm').addEventListener('submit', function(e) {
         const tenPhim = document.getElementById('tenPhim').value.trim();
-        const theLoai = document.getElementById('theLoai').value;
+        const genreChecked = Array.from(document.querySelectorAll('input[name=\"genreIds\"]:checked')).map(i=>i.value);
         const loaiPhim = document.getElementById('loaiPhim').value;
-        const daoDien = document.getElementById('daoDien').value.trim();
+        const directorChecked = Array.from(document.querySelectorAll('input[name=\"directorIds\"]:checked')).map(i=>i.value);
         const dienVien = document.getElementById('dienVien').value.trim();
         const doTuoiGioiHan = document.getElementById('doTuoiGioiHan').value;
         const thoiLuong = document.getElementById('thoiLuong').value;
@@ -357,7 +421,7 @@
         const posterFile = document.getElementById('posterFile').files[0];
         const isEdit = ${movie != null ? 'true' : 'false'};
 
-        if (!tenPhim || !theLoai || !loaiPhim || !daoDien || !dienVien || 
+        if (!tenPhim || genreChecked.length === 0 || !loaiPhim || directorChecked.length === 0 || !dienVien || 
             !doTuoiGioiHan || !thoiLuong || !noiDung || !ngayKhoiChieu || !ngonNguPhuDe) {
             e.preventDefault();
             alert('Vui lòng điền đầy đủ thông tin bắt buộc');

@@ -181,9 +181,9 @@
                                value="${product != null ? product.donGia : ''}"
                                placeholder="Nhập giá sản phẩm"
                                min="0"
-                               step="1000"
+                               step="any"
                                required>
-                        <div class="help-text">Giá tính bằng VNĐ</div>
+                        <div class="help-text">Giá tính bằng VNĐ (có thể nhập bất kỳ giá trị nào > 0)</div>
                     </div>
 
                     <div class="form-group">
@@ -261,7 +261,14 @@
         const donGia = document.getElementById('donGia').value;
         const thumbnailFile = document.getElementById('thumbnailFile').files[0];
         const trangThai = document.getElementById('trangThai').value;
-        const isEdit = ${product != null ? 'true' : 'false'};
+        <c:choose>
+            <c:when test="${product != null}">
+                const isEdit = true;
+            </c:when>
+            <c:otherwise>
+                const isEdit = false;
+            </c:otherwise>
+        </c:choose>
 
         if (!tenSP || !donGia || !trangThai) {
             e.preventDefault();
@@ -275,9 +282,9 @@
             return;
         }
 
-        if (parseFloat(donGia) < 0) {
+        if (parseFloat(donGia) <= 0) {
             e.preventDefault();
-            alert('Giá sản phẩm không được âm');
+            alert('Giá sản phẩm phải lớn hơn 0');
             return;
         }
 
@@ -285,14 +292,6 @@
             e.preventDefault();
             alert('Kích thước file không được vượt quá 5MB');
             return;
-        }
-    });
-
-    // Auto-format price input
-    document.getElementById('donGia').addEventListener('input', function() {
-        let value = this.value.replace(/[^0-9]/g, '');
-        if (value) {
-            this.value = parseInt(value).toLocaleString('vi-VN');
         }
     });
 </script>

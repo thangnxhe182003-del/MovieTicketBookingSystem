@@ -254,15 +254,18 @@
         <div class="admin-header-right">
             <div class="admin-user-info">
                 <div class="admin-user-avatar">
-                    <i class="fas fa-user"></i>
+                    ${sessionScope.loggedInStaff.hoTen.substring(0, 1).toUpperCase()}
                 </div>
-                <span>Admin</span>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <span style="font-weight: 600;">${sessionScope.loggedInStaff.hoTen}</span>
+                    <span style="font-size: 12px; color: #bdc3c7;">${sessionScope.loggedInStaff.chucVu}</span>
+                </div>
             </div>
+            <a href="home" class="admin-logout">
+                <i class="fas fa-home"></i> Trang chủ
+            </a>
             <a href="logout" class="admin-logout">
                 <i class="fas fa-sign-out-alt"></i> Đăng xuất
-            </a>
-            <a href="home" class="admin-logout">
-                <i class="fas fa-sign-out-alt"></i> Home
             </a>
         </div>
     </header>
@@ -270,6 +273,7 @@
     <!-- ==== SIDEBAR ==== -->
     <nav class="admin-sidebar">
         <div class="sidebar-menu">
+            <!-- Dashboard - Cả 2 role đều xem được -->
             <div class="menu-section">
                 <div class="menu-section-title">Tổng quan</div>
                 <a href="admin-dashboard" class="menu-item">
@@ -278,53 +282,73 @@
                 </a>
             </div>
             
+            <!-- Quản lý - Phân quyền theo role -->
             <div class="menu-section">
                 <div class="menu-section-title">Quản lý</div>
-                <a href="admin-cinema" class="menu-item ${param.currentPage == 'cinema' ? 'active' : ''}">
-                    <i class="fas fa-building"></i>
-                    Rạp phim
-                </a>
-                <a href="admin-products" class="menu-item ${param.currentPage == 'products' ? 'active' : ''}">
-                    <i class="fas fa-box"></i>
-                    Sản phẩm
-                </a>
-                <a href="admin-movies" class="menu-item ${param.currentPage == 'movies' ? 'active' : ''}">
-                    <i class="fas fa-film"></i>
-                    Phim
-                </a>
-                <a href="admin-rooms" class="menu-item ${param.currentPage == 'rooms' ? 'active' : ''}">
-                    <i class="fas fa-chair"></i>
-                    Phòng & Ghế
-                </a>
-                <a href="admin-showtimes" class="menu-item ${param.currentPage == 'showtimes' ? 'active' : ''}">
-                    <i class="fas fa-clock"></i>
-                    Suất chiếu
-                </a>
-                <a href="admin-bookings" class="menu-item ${param.currentPage == 'bookings' ? 'active' : ''}">
-                    <i class="fas fa-ticket-alt"></i>
-                    Đặt vé
-                </a>
+                
+                <!-- ADMIN ONLY: Rạp phim, Phòng & Ghế, Slider -->
+                <c:if test="${sessionScope.loggedInStaff.chucVu == 'Admin'}">
+                    <a href="admin-cinema" class="menu-item ${param.currentPage == 'cinema' ? 'active' : ''}">
+                        <i class="fas fa-building"></i>
+                        Rạp phim
+                    </a>
+                    <a href="admin-rooms" class="menu-item ${param.currentPage == 'rooms' ? 'active' : ''}">
+                        <i class="fas fa-chair"></i>
+                        Phòng & Ghế
+                    </a>
+                    <a href="admin-sliders" class="menu-item ${param.currentPage == 'sliders' ? 'active' : ''}">
+                        <i class="fas fa-images"></i>
+                        Slider
+                    </a>
+                </c:if>
+                
+                <!-- MANAGER ONLY: Sản phẩm, Phim, Thể loại, Đạo diễn, Suất chiếu, Đặt vé, Mã giảm giá -->
+                <c:if test="${sessionScope.loggedInStaff.chucVu == 'Manager'}">
+                    <a href="admin-products" class="menu-item ${param.currentPage == 'products' ? 'active' : ''}">
+                        <i class="fas fa-box"></i>
+                        Sản phẩm
+                    </a>
+                    <a href="admin-movies" class="menu-item ${param.currentPage == 'movies' ? 'active' : ''}">
+                        <i class="fas fa-film"></i>
+                        Phim
+                    </a>
+                    <a href="admin-genres" class="menu-item ${param.currentPage == 'genres' ? 'active' : ''}">
+                        <i class="fas fa-layer-group"></i>
+                        Thể loại
+                    </a>
+                    <a href="admin-directors" class="menu-item ${param.currentPage == 'directors' ? 'active' : ''}">
+                        <i class="fas fa-user-tie"></i>
+                        Đạo diễn
+                    </a>
+                    <a href="admin-showtimes" class="menu-item ${param.currentPage == 'showtimes' ? 'active' : ''}">
+                        <i class="fas fa-clock"></i>
+                        Suất chiếu
+                    </a>
+                    <a href="admin-tickets" class="menu-item ${param.currentPage == 'bookings' ? 'active' : ''}">
+                        <i class="fas fa-ticket-alt"></i>
+                        Đặt vé
+                    </a>
+                    <a href="admin-discounts" class="menu-item ${param.currentPage == 'discounts' ? 'active' : ''}">
+                        <i class="fas fa-tag"></i>
+                        Mã giảm giá
+                    </a>
+                </c:if>
             </div>
             
-            <div class="menu-section">
-                <div class="menu-section-title">Người dùng</div>
-                <a href="admin-customers" class="menu-item ${param.currentPage == 'customers' ? 'active' : ''}">
-                    <i class="fas fa-users"></i>
-                    Khách hàng
-                </a>
-                <a href="admin-staff" class="menu-item ${param.currentPage == 'staff' ? 'active' : ''}">
-                    <i class="fas fa-user-tie"></i>
-                    Nhân viên
-                </a>
-            </div>
-            
-<!--            <div class="menu-section">
-                <div class="menu-section-title">Hệ thống</div>
-                <a href="admin-settings" class="menu-item ${param.currentPage == 'settings' ? 'active' : ''}">
-                    <i class="fas fa-cog"></i>
-                    Cài đặt
-                </a>
-            </div>-->
+            <!-- Người dùng - ADMIN ONLY -->
+            <c:if test="${sessionScope.loggedInStaff.chucVu == 'Admin'}">
+                <div class="menu-section">
+                    <div class="menu-section-title">Người dùng</div>
+                    <a href="admin-customers" class="menu-item ${param.currentPage == 'customers' ? 'active' : ''}">
+                        <i class="fas fa-users"></i>
+                        Khách hàng
+                    </a>
+                    <a href="admin-staff" class="menu-item ${param.currentPage == 'staff' ? 'active' : ''}">
+                        <i class="fas fa-user-tie"></i>
+                        Nhân viên
+                    </a>
+                </div>
+            </c:if>
         </div>
     </nav>
 

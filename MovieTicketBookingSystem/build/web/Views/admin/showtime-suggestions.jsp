@@ -97,6 +97,8 @@
                         <input type="hidden" name="ngayChieu" value="${ngayChieu}">
                         <input type="hidden" name="giaVeCoSo" value="${giaVeCoSo}">
                         <input type="hidden" name="ngonNguAmThanh" value="${ngonNguAmThanh}">
+                        <input type="hidden" name="giaVeTreEm" value="${param.giaVeTreEm != null ? param.giaVeTreEm : '50000'}">
+                        <input type="hidden" name="vat" value="${param.vat != null ? param.vat : '10.00'}">
                         
                         <div class="suggestions-grid">
                             <c:if test="${empty suggestions}">

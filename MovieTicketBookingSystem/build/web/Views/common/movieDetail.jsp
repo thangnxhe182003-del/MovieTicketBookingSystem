@@ -40,6 +40,24 @@
                 width: 100%;
                 height: auto;
                 display: block;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+
+            .movie-poster img.loaded {
+                opacity: 1;
+            }
+
+            .movie-poster img.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 14px;
+                text-align: center;
             }
             .movie-info-section {
                 padding: 10px 0;
@@ -174,6 +192,32 @@
                 justify-content: center;
                 font-size: 40px;
                 color: #e50914;
+                overflow: hidden;
+                border-radius: 8px;
+            }
+
+            .trailer-item-thumb img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                background: #f0f0f0;
+            }
+
+            .trailer-item-thumb img.loaded {
+                opacity: 1;
+            }
+
+            .trailer-item-thumb img.error {
+                opacity: 1;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-size: 12px;
+                text-align: center;
             }
             .trailer-item-info {
                 padding: 10px;
@@ -267,7 +311,9 @@
             <div class="detail-container">
                 <div class="detail-header">
                     <div class="movie-poster">
-                        <img src="${pageContext.request.contextPath}/assets/image/${movie.poster}" alt="${movie.tenPhim}" onerror="this.src='https://via.placeholder.com/250x350?text=No+Image'">
+                        <img src="${pageContext.request.contextPath}/assets/image/${movie.poster}" 
+                             alt="${movie.tenPhim}" 
+                             data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjM1MCIgdmlld0JveD0iMCAwIDI1MCAzNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyNTAiIGhlaWdodD0iMzUwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xMjUgNzBDMTI1IDU0LjM2MTcgMTM4LjM2MiA0MSAxNTUgNDFIMTU1QzE3MS42MzggNDEgMTg1IDU0LjM2MTcgMTg1IDcwVjI4MEMxODUgMjk2LjYzOCAxNzEuNjM4IDMxMCAxNTUgMzEwSDE1NUMxMzguMzYyIDMxMCAxMjUgMjk2LjYzOCAxMjUgMjgwVjcwWiIgZmlsbD0iI0Q5RDlEOSIvPgo8c3ZnIHg9IjExMCIgeT0iMTUwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4KPC9zdmc+Cg==">
                     </div>
                     <div class="movie-info-section">
                         <h1 class="movie-title">${movie.tenPhim}</h1>
@@ -277,17 +323,26 @@
                             </div>
                         </c:if>
                         <div class="movie-meta">
-                            <div class="meta-item"><div class="meta-label">Thể loại</div><div class="meta-value">${movie.theLoai}</div></div>
+                            <div class="meta-item"><div class="meta-label">Thể loại</div><div class="meta-value">
+                                <c:forEach var="g" items="${genres}">
+                                    <a href="${pageContext.request.contextPath}/home?genreId=${g.maTheLoai}" class="badge" style="text-decoration:none; margin-right:6px;">${g.tenTheLoai}</a>
+                                </c:forEach>
+                            </div></div>
                             <div class="meta-item"><div class="meta-label">Loại phim</div><div class="meta-value">${movie.loaiPhim}</div></div>
                             <div class="meta-item"><div class="meta-label">Thời lượng</div><div class="meta-value">${movie.thoiLuong} phút</div></div>
                             <div class="meta-item"><div class="meta-label">Giới hạn tuổi</div><div class="meta-value"><c:choose><c:when test="${movie.doTuoiGioiHan == 0}">Mọi lứa tuổi</c:when><c:otherwise>K${movie.doTuoiGioiHan}+</c:otherwise></c:choose></div></div>
-                            <div class="meta-item"><div class="meta-label">Đạo diễn</div><div class="meta-value">${movie.daoDien}</div></div>
+                            <div class="meta-item"><div class="meta-label">Đạo diễn</div><div class="meta-value">
+                                <c:forEach var="d" items="${directors}">
+                                    <a href="${pageContext.request.contextPath}/home?directorId=${d.maDaoDien}" class="badge" style="text-decoration:none; background:#fff3cd; color:#856404; margin-right:6px;">${d.tenDaoDien}</a>
+                                </c:forEach>
+                            </div></div>
                             <div class="meta-item"><div class="meta-label">Ngôn ngữ phụ đề</div><div class="meta-value">${movie.ngonNguPhuDe}</div></div>
                         </div>
                         <div class="action-buttons">
                             <c:if test="${not empty showtimes}"><a href="showtime-selection?maPhim=${movie.maPhim}" class="btn btn-primary">🎫 Đặt vé ngay</a></c:if>
                             <c:if test="${empty showtimes}"><button class="btn btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">Sắp có suất chiếu</button></c:if>
-                                <button class="btn btn-secondary" onclick="history.back()">← Quay lại</button>
+                                <button class="btn btn-secondary" onclick="window.location.href = '${pageContext.request.contextPath}/home'">← Quay lại</button>
+
                             </div>
                             <div class="movie-description"><strong>Nội dung:</strong><br>${movie.noiDung}</div>
                         <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin-top: 15px;"><strong>Diễn viên:</strong> ${movie.dienVien}</div>
@@ -353,7 +408,11 @@
                         <div class="trailer-list">
                             <c:forEach var="product" items="${products}">
                                 <div class="trailer-item" style="cursor: default;">
-                                    <div class="trailer-item-thumb" style="background: #fff; color: #333; font-size: 24px;">🍿</div>
+                                    <div class="trailer-item-thumb">
+                                        <img src="${pageContext.request.contextPath}/assets/image/${product.thumbnailUrl}" 
+                                             alt="${product.tenSP}" 
+                                             data-fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjExMiIgdmlld0JveD0iMCAwIDIwMCAxMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTEyIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xMDAgMjhDMTAwIDI0LjY4NjMgMTAyLjY4NiAyMiAxMDYgMjJIMTA2QzEwOS4zMTQgMjIgMTEyIDI0LjY4NjMgMTEyIDI4Vjg0QzExMiA4Ny4zMTM3IDEwOS4zMTQgOTAgMTA2IDkwSDEwNkMxMDIuNjg2IDkwIDEwMCA4Ny4zMTM3IDEwMCA4NFYyOFoiIGZpbGw9IiNEOUQ5RDkiLz4KPHN2ZyB4PSI5MCIgeT0iNTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPgo8L3N2Zz4K">
+                                    </div>
                                     <div class="trailer-item-info">
                                         <strong>${product.tenSP}</strong><br>
                                         <span style="color: #e50914; font-weight: 600;"><fmt:formatNumber value="${product.donGia}" type="currency" currencySymbol="₫"/></span>
@@ -367,6 +426,36 @@
 
             </div>
         </div>
+
+        <script>
+            // Image loading handler
+            function handleImageLoad(img) {
+                img.classList.add('loaded');
+            }
+
+            function handleImageError(img) {
+                img.classList.add('error');
+                if (img.dataset.fallback) {
+                    img.src = img.dataset.fallback;
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                // Handle image loading
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.complete) {
+                        if (img.naturalHeight !== 0) {
+                            handleImageLoad(img);
+                        } else {
+                            handleImageError(img);
+                        }
+                    } else {
+                        img.addEventListener('load', () => handleImageLoad(img));
+                        img.addEventListener('error', () => handleImageError(img));
+                    }
+                });
+            });
+        </script>
 
         <jsp:include page="../layout/footer.jsp" />
     </body>
